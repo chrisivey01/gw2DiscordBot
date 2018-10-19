@@ -6,7 +6,24 @@ const cron = require('cron').CronJob;
 
 var pool = require('./database');
 
-
+// Polyfills
+// https://github.com/uxitten/polyfill/blob/master/string.polyfill.js
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/padStart
+if (!String.prototype.padStart) {
+    String.prototype.padStart = function padStart(targetLength, padString) {
+        targetLength = targetLength >> 0; //truncate if number, or convert non-number to 0;
+        padString = String(typeof padString !== 'undefined' ? padString : ' ');
+        if (this.length >= targetLength) {
+            return String(this);
+        } else {
+            targetLength = targetLength - this.length;
+            if (targetLength > padString.length) {
+                padString += padString.repeat(targetLength / padString.length); //append to original to ensure we are longer than needed
+            }
+            return padString.slice(0, targetLength) + String(this);
+        }
+    };
+}
 
 var worldCheck = [];
 var wvwPKills = [];
@@ -16,12 +33,11 @@ var spyCount = 0;
 
 var yaksBendServerID = 1003;
 var linkedServerID = 1010
+
 // Channels
-var chanKillCountsId = 494353907804536832;
+const chanKillCountsId = "494353907804536832";
 
-var servers = [
-
-    ];
+var servers = [];
 var red;
 var blue;
 var green;
@@ -41,11 +57,11 @@ const config = require("./auth.json");
 // config.prefix contains the message prefix.
 
 client.on("ready", () => {
-    // This event will run if the bot starts, and logs in, successfully.
-    console.log(`Bot has started, with ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`);
-// Example of changing the bot's playing game to something useful. `client.user` is what the
-// docs refer to as the "ClientUser".
-client.user.setActivity(`Doing stuff`);
+  // This event will run if the bot starts, and logs in, successfully.
+  console.log(`Bot has started, with ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`);
+  // Example of changing the bot's playing game to something useful. `client.user` is what the
+  // docs refer to as the "ClientUser".
+  client.user.setActivity(`Doing stuff`);
 });
 
 client.on("ready", () => {
@@ -168,7 +184,6 @@ function commands(message) {
         "\n !kda " +
         "\n !score " +
         "\n !kills " +
-        "\n !weekly " +
         "\n !leaderboard " +
         "\n !check ");
 }
@@ -290,7 +305,7 @@ async function keyAdd(message) {
         let verifiedRole = message.guild.roles.find("name", "Verified");
 
         //TODO THIS NEEDS TO CHANGE ALL THE TIME
-        if (worldCheck.world === 1003 || worldCheck.world === linkedServerID) {
+        if (worldCheck.world === 1003 || worldCheck.world === 1010) {
             await userToModify.addRole(verifiedRole.id)
             message.channel.send("You've been verified! Type !commands to see what I can do.")
         } else {
@@ -322,7 +337,7 @@ async function check(message) {
 
     if (worldCheck.world === 1003) {
         message.channel.send("Yb Native")
-    } else if (worldCheck.world === linkedServerID) {
+    } else if (worldCheck.world === 1010) {
         message.channel.send("EBay Native")
     } else {
         message.channel.send("Spy")
@@ -342,6 +357,7 @@ async function purge(message) {
         }
 
         // var verifiedRole = roles.find((item) => item.name === "Verified")
+
         message.channel.send("Purge process beginning... this will take a few minutes")
         for (let i = 0; i < result.length; i++) {
 
@@ -372,7 +388,7 @@ async function purge(message) {
                 } catch (e) {
                     console.log(e)
                 }
-            } else if (worldCheck.world === linkedServerID) {
+            } else if (worldCheck.world === 1010) {
                 linkCount++
                 try {
                     await userToModify.addRole(verifiedRole.id)
@@ -450,6 +466,11 @@ async function score(message) {
         green = await getNames(greenId)
     }
 
+    // Get server abbreviations
+    let redServerNameAbbreviated = abbreviate(red);
+    let greenServerNameAbbreviated = abbreviate(green);
+    let blueServerNameAbbreviated = abbreviate(blue);
+
 
     //total scores
     let redScore;
@@ -479,6 +500,7 @@ async function score(message) {
     currentGreen = lastSkirm.scores.green
 
 
+    /*
     message.channel.send(
         'Total WVW Scores ----> ' + '\n' +
         red[0].name + ' Score: ' + redScore + '\n' +
@@ -495,17 +517,43 @@ async function score(message) {
         blue[0].name + ' Current Skirmish: ' + currentBlue + '\n' +
         green[0].name + ' Current Skirmish: ' + currentGreen + '\n'
     )
+    */
+    message.channel.send(
+      {
+        "embed": {
+          "title": "WvW Status",
+          "color": 16646144,
+          "fields": [
+            {
+              "name": "Total",
+              "value": "```" + redServerNameAbbreviated.padStart(3, ' ') + ": " + redScore + "\n" + greenServerNameAbbreviated.padStart(3, ' ') + ": " + greenScore + "\n" + blueServerNameAbbreviated + ": " + blueScore + "```",
+              "inline": true
+            },
+            {
+              "name": "Victory Points",
+              "value": "```" + redServerNameAbbreviated.padStart(3, ' ') + ": " + redSkirm + "\n" + greenServerNameAbbreviated.padStart(3, ' ') + ": " + greenSkirm + "\n" + blueServerNameAbbreviated + ": " + blueSkirm + "```",
+              "inline": true
+            },
+            {
+              "name": "Current Skirmish",
+              "value": "```" + redServerNameAbbreviated.padStart(3, ' ') + ": " + currentRed + "\n" + greenServerNameAbbreviated.padStart(3, ' ') + ": " + currentGreen + "\n" + blueServerNameAbbreviated + ": " + currentBlue + "```",
+              "inline": true
+            }
+          ]
+        }
+      }
+    );
 }
 
 async function weekly(message) {
-  message.reply('This command has been rolled into !kills.');
+  message.reply("This command has been rolled into !kills.");
 }
 
 async function kills(message) {
-  var _output = '';
+  var _output = "";
   // Thwart user attempt to run the command outside kill count channel
   if (message.channel.id != chanKillCountsId) {
-      _output += 'Try again in the ' + message.guild.channels.find(channel => channel.name === "killcounts").toString() + ' channel.';
+      _output += "Try again in the " + message.guild.channels.get(chanKillCountsId) + " channel.";
     } else {
       // obtain userId of one who used kill command
       let userId = message.author.id;
@@ -521,28 +569,31 @@ async function kills(message) {
           await wvwKills(grabUserData[0].api_key);
           let apiHolder = grabUserData[0].api_key;
           if (wvwPKills.current == undefined) {
-              _output += 'Your API key needs the "progression" permission. Register a new key and run the command again.';
+              _output += "Your API key needs the \"progression\" permission. Register a new key and run the command again.";
             } else {
-              _output +=  'Your kill total is ' + wvwPKills.current;
+              _output +=  "Your kill total is " + wvwPKills.current;
               try {
                   let killDiff = wvwPKills.current - grabUserData[0].wvwkills;
                   if (grabUserData[0].wvwkills !== null) {
-                      _output += ', an increase of ' + killDiff + ' over your previous total of ' + grabUserData[0].wvwkills + '. ';
+                      _output += ", an increase of " + killDiff + " over your previous total of " + grabUserData[0].wvwkills + ".";
+                      // These are getting boring (and are kind of insulting)
+                      /*
                       if (killDiff > 1000) {
-                          _output += 'You\'re a beast!';
+                          _output += "You're a beast!";
                         } else if (killDiff > 500) {
-                          _output += 'Nice! Keepin\' the Yak dream alive.';
+                          _output += "Nice! Keepin' the Yak dream alive.";
                         } else if (killDiff > 100) {
-                          _output += 'Respectable, but double your efforts!';
+                          _output += "Respectable, but double your efforts!";
                         } else if (killDiff > 50) {
-                          _output += 'Every little bit helps. I think.';
+                          _output += "Every little bit helps. I think.";
                         } else if (killDiff > 10) {
-                          _output += 'Stop having a life and support the server, kthx.';
+                          _output += "Stop having a life and support the server, kthx.";
                         } else if (killDiff == 0) {
-                          _output += 'Slacker. Get to work.';
+                          _output += "Slacker. Get to work.";
                       }
+                      */
                     } else {
-                      _output += '. Since this is your first time running !kills, we\'ve stored your current kill count. Try it again later to see your new kill count!';
+                      _output += ". Since this is your first time running !kills, we've stored your current kill count. Try it again later to see your new kill count!";
                   }
                 } catch (err) {
               }
@@ -555,15 +606,15 @@ async function kills(message) {
               await pool.query(killSql, killLoad);
           }
         } catch (e) {
-          _output += 'You need to be a verified user for this.';
+          _output += "You need to be a verified user for this.";
       }
       if (grabUserData[0].account_id === undefined) {
-          _output += '\nWeekly stats are currently unavailable. Try again later after the server has updated.';
+          _output += "\nWeekly stats are currently unavailable. Try again later after the server has updated.";
         } else {
           try {
               await wvwKills(grabUserData[0].api_key);
               if (wvwPKills.current == undefined) {
-                  _output += '\nYour API key needs the "progression" permission. Register a new key and run the command again.';
+                  _output += "\nYour API key needs the \"progression\" permission. Register a new key and run the command again.";
                 } else {
                   //check to see if user_id is not in weekly tourny DB
                   let prev_count = parseInt(grabUserData[0].wvwkills);
@@ -592,14 +643,14 @@ async function kills(message) {
                   ];
                   await pool.query(killWeeklySQL, values);
                   if (grabUserData[0].prev_count === null) {
-                      _output += '\nYou\'ve been added to the leaderboard at http://thetopyak.com/ - this gets updated every time you run !kills.';
+                      _output += "\nYou've been added to the leaderboard at http://thetopyak.com/ - this gets updated every time you run !kills.";
                     } else {
-                      _output += '\nYou\'re up to ' + weekly_kill_total + ' kills for the week!';
-                      //You\'ve logged ' + kills_from_last + ' from the last update! Check the leaderboard at http://thetopyak.com/ for updates.');
+                      _output += "\nYou're up to " + weekly_kill_total + " kills for the week.";
+                      //_output += "\nYou've logged " + kills_from_last + " from the last update! Check the leaderboard at http://thetopyak.com/ for updates.";
                   }
               }
             } catch (e) {
-              _output += '\nYou need to be a verified user for this.';
+              _output += "\nYou need to be a verified user for this.";
 
           }
       }
@@ -707,37 +758,26 @@ async function resetLeaderboard(message){
 }
 
 async function messageServerMates(message){
-
-    if(message.member.roles.find("name", "@mod") || message.member.roles.find("name", "Chris") ||
+     if(message.member.roles.find("name", "@mod") || message.member.roles.find("name", "Chris") ||
         message.member.roles.find("name", "@admin") ){
-
-        let sql = "SELECT user_id, api_key FROM users"
+         let sql = "SELECT user_id, api_key FROM users"
         let result;
-
-        result = await pool.query(sql)
-
-        console.log(result)
+         result = await pool.query(sql)
+         console.log(result)
         message.channel.send('Give me a moment... messaging server mates')
-
-        for (let i = 0; i < result.length; i++) {
+         for (let i = 0; i < result.length; i++) {
             await fetchBulk(result[i].api_key)
-
-            if(worldCheck.world === linkedServerID){
+             if(worldCheck.world === linkedServerID){
                 let userId = result[i].user_id
                 let mate = message.guild.members.find('id',userId)
                 mate.send('Like what we do on YB? Msg DK or Chris for help on xfering! It was a pleasure playing with you.')
             }
         }
-
-        message.channel.send('Done!')
-
-    }else{
+         message.channel.send('Done!')
+     }else{
         message.channel.send('You do not have access to this!')
     }
-
-}
-
-
+ }
 
 client.on("message", async (message) => {
     if (message.author.bot) return;
@@ -792,15 +832,6 @@ client.on("message", async (message) => {
         await messageServerMates(message);
     }
 });
-
-
-
-
-
-
-
-
-
 
 
 client.login(config.token);
