@@ -499,6 +499,8 @@ async function score(message) {
     currentBlue = lastSkirm.scores.blue
     currentGreen = lastSkirm.scores.green
 
+    let allScores = [redScore, blueScore, greenScore, redSkirm, blueSkirm, greenSkirm, currentRed, currentBlue, currentGreen];
+    let allScoresMaxLength = allScores.sort(function (a, b) { return b.length - a.length; })[0].length;
 
     /*
     message.channel.send(
@@ -526,17 +528,17 @@ async function score(message) {
           "fields": [
             {
               "name": "Total",
-              "value": "```" + redServerNameAbbreviated.padStart(3, ' ') + ": " + redScore + "\n" + greenServerNameAbbreviated.padStart(3, ' ') + ": " + greenScore + "\n" + blueServerNameAbbreviated + ": " + blueScore + "```",
+              "value": "```" + redServerNameAbbreviated.padStart(3, ' ') + ": " + redScore.padStart(allScoresMaxLength, ' ') + "\n" + greenServerNameAbbreviated.padStart(3, ' ') + ": " + greenScore.padStart(allScoresMaxLength, ' ') + "\n" + blueServerNameAbbreviated + ": " + blueScore.padStart(allScoresMaxLength, ' ') + "```",
               "inline": true
             },
             {
               "name": "Victory Points",
-              "value": "```" + redServerNameAbbreviated.padStart(3, ' ') + ": " + redSkirm + "\n" + greenServerNameAbbreviated.padStart(3, ' ') + ": " + greenSkirm + "\n" + blueServerNameAbbreviated + ": " + blueSkirm + "```",
+              "value": "```" + redServerNameAbbreviated.padStart(3, ' ') + ": " + redSkirm.padStart(allScoresMaxLength, ' ') + "\n" + greenServerNameAbbreviated.padStart(3, ' ') + ": " + greenSkirm.padStart(allScoresMaxLength, ' ') + "\n" + blueServerNameAbbreviated + ": " + blueSkirm.padStart(allScoresMaxLength, ' ') + "```",
               "inline": true
             },
             {
               "name": "Current Skirmish",
-              "value": "```" + redServerNameAbbreviated.padStart(3, ' ') + ": " + currentRed + "\n" + greenServerNameAbbreviated.padStart(3, ' ') + ": " + currentGreen + "\n" + blueServerNameAbbreviated + ": " + currentBlue + "```",
+              "value": "```" + redServerNameAbbreviated.padStart(3, ' ') + ": " + currentRed.padStart(allScoresMaxLength, ' ') + "\n" + greenServerNameAbbreviated.padStart(3, ' ') + ": " + currentGreen.padStart(allScoresMaxLength, ' ') + "\n" + blueServerNameAbbreviated + ": " + currentBlue.padStart(allScoresMaxLength, ' ') + "```",
               "inline": true
             }
           ]
