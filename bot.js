@@ -71,6 +71,9 @@ client.on("ready", () => {
 
 //SEMI URGENT TO-DO: !UPDATE AND !PURGE ISSUE -> REMOVE "SET 1" TO UPDATE AND OUT OF PURGE
 
+function abbreviateWords(_text) {
+  return _text.replace("'", "").match(/\b(\w)/g).join('');
+}
 
 //api calls
 const fetchAccounts = async (api) =>{
@@ -467,9 +470,9 @@ async function score(message) {
     }
 
     // Get server abbreviations
-    let redServerNameAbbreviated = abbreviate(red);
-    let greenServerNameAbbreviated = abbreviate(green);
-    let blueServerNameAbbreviated = abbreviate(blue);
+    let redServerNameAbbreviated = abbreviateWords(red);
+    let greenServerNameAbbreviated = abbreviateWords(green);
+    let blueServerNameAbbreviated = abbreviateWords(blue);
 
 
     //total scores
