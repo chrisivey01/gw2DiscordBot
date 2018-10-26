@@ -7,23 +7,24 @@ const cron = require('cron').CronJob;
 var pool = require('./database');
 
 // Polyfills
-// https://github.com/uxitten/polyfill/blob/master/string.polyfill.js
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/padStart
-if (!String.prototype.padStart) {
-    String.prototype.padStart = function padStart(targetLength, padString) {
-        targetLength = targetLength >> 0; //truncate if number, or convert non-number to 0;
-        padString = String(typeof padString !== 'undefined' ? padString : ' ');
-        if (this.length >= targetLength) {
-            return String(this);
-        } else {
-            targetLength = targetLength - this.length;
-            if (targetLength > padString.length) {
-                padString += padString.repeat(targetLength / padString.length); //append to original to ensure we are longer than needed
-            }
-            return padString.slice(0, targetLength) + String(this);
-        }
-    };
-}
+//  https://github.com/uxitten/polyfill/blob/master/string.polyfill.js
+//  https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/padStart
+// if (!String.prototype.padStart) {
+//     String.prototype.padStart = function padStart(targetLength, padString) {
+//         targetLength = targetLength >> 0; //truncate if number, or convert non-number to 0;
+//         padString = String(typeof padString !== 'undefined' ? padString : ' ');
+//         if (this.length >= targetLength) {
+//             return String(this);
+//         } else {
+//             targetLength = targetLength - this.length;
+//             if (targetLength > padString.length) {
+//                 padString += padString.repeat(targetLength / padString.length); //append to original to ensure we are longer than needed
+//             }
+//             return padString.slice(0, targetLength) + String(this);
+//         }
+//     };
+// }
+
 
 var worldCheck = [];
 var wvwPKills = [];
@@ -73,6 +74,20 @@ client.on("ready", () => {
 
 function abbreviateWords(_text) {
   return _text.replace("'", "").match(/\b(\w)/g).join('');
+}
+
+function padStart(targetLength, padString) {
+    targetLength = targetLength >> 0; //truncate if number, or convert non-number to 0;
+    padString = String(typeof padString !== 'undefined' ? padString : ' ');
+    if (this.length >= targetLength) {
+        return String(this);
+    } else {
+        targetLength = targetLength - this.length;
+        if (targetLength > padString.length) {
+            padString += padString.repeat(targetLength / padString.length); //append to original to ensure we are longer than needed
+        }
+        return padString.slice(0, targetLength) + String(this);
+    }
 }
 
 //api calls
@@ -470,9 +485,9 @@ async function score(message) {
     }
 
     // Get server abbreviations
-    let redServerNameAbbreviated = abbreviateWords(red);
-    let greenServerNameAbbreviated = abbreviateWords(green);
-    let blueServerNameAbbreviated = abbreviateWords(blue);
+    let redServerNameAbbreviated = await abbreviateWords(red[0].name);
+    let greenServerNameAbbreviated = await abbreviateWords(green[0].name);
+    let blueServerNameAbbreviated = await abbreviateWords(blue[0].name);
 
 
     //total scores
@@ -531,17 +546,17 @@ async function score(message) {
           "fields": [
             {
               "name": "Total",
-              "value": "```" + redServerNameAbbreviated.padStart(3, ' ') + ": " + redScore.padStart(allScoresMaxLength, ' ') + "\n" + greenServerNameAbbreviated.padStart(3, ' ') + ": " + greenScore.padStart(allScoresMaxLength, ' ') + "\n" + blueServerNameAbbreviated + ": " + blueScore.padStart(allScoresMaxLength, ' ') + "```",
+              "value": "```" + redServerNameAbbreviated.padStart(3, ' ') + ": " + redScore.toString().padStart(allScoresMaxLength, ' ') + "\n" + greenServerNameAbbreviated.padStart(3, ' ') + ": " + greenScore.toString().padStart(allScoresMaxLength, ' ') + "\n" + blueServerNameAbbreviated + ": " + blueScore.toString().padStart(allScoresMaxLength, ' ') + "```",
               "inline": true
             },
             {
               "name": "Victory Points",
-              "value": "```" + redServerNameAbbreviated.padStart(3, ' ') + ": " + redSkirm.padStart(allScoresMaxLength, ' ') + "\n" + greenServerNameAbbreviated.padStart(3, ' ') + ": " + greenSkirm.padStart(allScoresMaxLength, ' ') + "\n" + blueServerNameAbbreviated + ": " + blueSkirm.padStart(allScoresMaxLength, ' ') + "```",
+              "value": "```" + redServerNameAbbreviated.padStart(3, ' ') + ": " + redSkirm.toString().padStart(allScoresMaxLength, ' ') + "\n" + greenServerNameAbbreviated.padStart(3, ' ') + ": " + greenSkirm.toString().padStart(allScoresMaxLength, ' ') + "\n" + blueServerNameAbbreviated + ": " + blueSkirm.toString().padStart(allScoresMaxLength, ' ') + "```",
               "inline": true
             },
             {
               "name": "Current Skirmish",
-              "value": "```" + redServerNameAbbreviated.padStart(3, ' ') + ": " + currentRed.padStart(allScoresMaxLength, ' ') + "\n" + greenServerNameAbbreviated.padStart(3, ' ') + ": " + currentGreen.padStart(allScoresMaxLength, ' ') + "\n" + blueServerNameAbbreviated + ": " + currentBlue.padStart(allScoresMaxLength, ' ') + "```",
+              "value": "```" + redServerNameAbbreviated.padStart(3, ' ') + ": " + currentRed.toString().padStart(allScoresMaxLength, ' ') + "\n" + greenServerNameAbbreviated.padStart(3, ' ') + ": " + currentGreen.toString().padStart(allScoresMaxLength, ' ') + "\n" + blueServerNameAbbreviated + ": " + currentBlue.toString().padStart(allScoresMaxLength, ' ') + "```",
               "inline": true
             }
           ]
@@ -774,8 +789,13 @@ async function messageServerMates(message){
             await fetchBulk(result[i].api_key)
              if(worldCheck.world === linkedServerID){
                 let userId = result[i].user_id
-                let mate = message.guild.members.find('id',userId)
-                mate.send('Like what we do on YB? Msg DK or Chris for help on xfering! It was a pleasure playing with you.')
+                // let mate = message.guild.members.find('id',userId)
+                 let mate = message.guild.members.find(id => id.id === userId)
+                 try {
+                     mate.send('Like what we do on YB? Msg DK or Chris for help on xfering! It was a pleasure playing with you.')
+                 }catch{
+                    console.log("this user left the server")
+                 }
             }
         }
          message.channel.send('Done!')
