@@ -404,7 +404,7 @@ async function purge(message) {
                     await pool.query(sql, nameShame)
 
                 } catch (e) {
-                    console.log(e)
+                    console.log("User is no longer on server")
                 }
             } else if (worldCheck.world === 1010) {
                 linkCount++
@@ -421,7 +421,7 @@ async function purge(message) {
 
 
                 } catch (e) {
-                    console.log(e)
+                    console.log("User is no longer on server")
                 }
             } else {
                 spyCount++
@@ -438,10 +438,8 @@ async function purge(message) {
                         api_key = result[i].api_key
                     ]
                     await pool.query(sql, nameShame)
-
-
                 } catch (e) {
-                    console.log(e)
+                    console.log("User is no longer on server")
                 }
             }
         }
