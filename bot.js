@@ -754,6 +754,8 @@ async function resetLeaderboard(message){
         let clearWeeklyTournySQL = "UPDATE users SET prev_count = NULL, current_count = NULL, weekly_kill_total = NULL"
 
         await pool.query(clearWeeklyTournySQL)
+        
+        message.channel.send('Done')
 
     }else{
         message.channel.send('You do not have access to this!')
