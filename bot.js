@@ -385,8 +385,8 @@ async function purge(message) {
             //get users from db
             // let userToModify = client.users.get(result[i].user_id)
             let userToModify = client.guilds.get("476902310581239810").members.get(result[i].user_id)
-            let verifiedRole = message.guild.roles.find("name", "Verified");
-            let spyRole = message.guild.roles.find("name", "Thinks They're Sneaky");
+            let verifiedRole = message.guild.roles.find(name => name.name === "Verified");
+            let spyRole = message.guild.roles.find(name => name.name === "Thinks They're Sneaky");
 
 
             //numbers will need to be changed for cooresponding servers
