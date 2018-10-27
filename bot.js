@@ -662,7 +662,7 @@ async function kills(message) {
 }
 
 async function leaderboard(message) {
-    let sql = "select * from users where wvwkills is not null AND on_yaks=1 OR on_yaks=2 order by wvwkills desc limit 10"
+    let sql = "select * from users where wvwkills is not null AND (on_yaks=1 OR on_yaks=2) order by wvwkills desc limit 10"
     let result;
 
     result = await pool.query(sql)
@@ -754,7 +754,7 @@ async function resetLeaderboard(message){
         let clearWeeklyTournySQL = "UPDATE users SET prev_count = NULL, current_count = NULL, weekly_kill_total = NULL"
 
         await pool.query(clearWeeklyTournySQL)
-        
+
         message.channel.send('Done')
 
     }else{
