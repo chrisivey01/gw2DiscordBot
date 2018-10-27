@@ -780,8 +780,8 @@ async function messageServerMates(message){
                  let mate = message.guild.members.find(id => id.id === userId)
                  try {
                      mate.send('Like what we do on YB? Msg DK or Chris for help on xfering! It was a pleasure playing with you.')
-                 }catch{
-                    console.log("this user left the server")
+                 }catch(err){
+                    console.log(err)
                  }
             }
         }
