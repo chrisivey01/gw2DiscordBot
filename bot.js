@@ -414,7 +414,7 @@ async function purge(message) {
                     //ping sql db
                     let sql = "UPDATE users SET on_yaks = ? WHERE api_key = ?"
                     let nameShame = [
-                        on_yaks = 1,
+                        on_yaks = 2,
                         api_key = result[i].api_key
                     ]
                     await pool.query(sql, nameShame)
@@ -596,22 +596,7 @@ async function kills(message) {
                   let killDiff = wvwPKills.current - grabUserData[0].wvwkills;
                   if (grabUserData[0].wvwkills !== null) {
                       _output += ", an increase of " + killDiff + " over your previous total of " + grabUserData[0].wvwkills + ".";
-                      // These are getting boring (and are kind of insulting)
-                      /*
-                      if (killDiff > 1000) {
-                          _output += "You're a beast!";
-                        } else if (killDiff > 500) {
-                          _output += "Nice! Keepin' the Yak dream alive.";
-                        } else if (killDiff > 100) {
-                          _output += "Respectable, but double your efforts!";
-                        } else if (killDiff > 50) {
-                          _output += "Every little bit helps. I think.";
-                        } else if (killDiff > 10) {
-                          _output += "Stop having a life and support the server, kthx.";
-                        } else if (killDiff == 0) {
-                          _output += "Slacker. Get to work.";
-                      }
-                      */
+
                     } else {
                       _output += ". Since this is your first time running !kills, we've stored your current kill count. Try it again later to see your new kill count!";
                   }
@@ -679,7 +664,7 @@ async function kills(message) {
 }
 
 async function leaderboard(message) {
-    let sql = "select * from users where wvwkills is not null AND on_yaks=1 order by wvwkills desc limit 10"
+    let sql = "select * from users where wvwkills is not null AND on_yaks=1 OR on_yaks=2 order by wvwkills desc limit 10"
     let result;
 
     result = await pool.query(sql)
@@ -780,10 +765,12 @@ async function resetLeaderboard(message){
 async function messageServerMates(message){
      if(message.member.roles.find("name", "@mod") || message.member.roles.find("name", "Chris") ||
         message.member.roles.find("name", "@admin") ){
-         let sql = "SELECT user_id, api_key FROM users"
+
+        let sql = "SELECT user_id, api_key FROM users WHERE on_yaks=?"
         let result;
-         result = await pool.query(sql)
-         console.log(result)
+        let linkNumber = 3
+        result = await pool.query(sql,[linkNumber])
+
         message.channel.send('Give me a moment... messaging server mates')
          for (let i = 0; i < result.length; i++) {
             await fetchBulk(result[i].api_key)
