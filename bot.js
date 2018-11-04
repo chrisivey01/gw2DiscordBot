@@ -45,14 +45,14 @@ var green;
 
 var incre = 0;
 
-new CronJob('59 11 * * *', function() {
+const job = new CronJob('59 11 * * *', function() {
     client.channels.get("483881363100139521").send("Interested in seeing what I can do? Type !commands, got a cool idea? Message Chris!")
 
 }, null, true, 'America/Los_Angeles');
 
 
 
-new CronJob('1 * * * *', function() {
+const test = new CronJob('1 * * * *', function() {
 
     client.channels.get("483881363100139521").send("This has been used " + incre++ +" times" )
 
@@ -78,6 +78,8 @@ client.on("ready", () => {
 
 client.on("ready", () => {
     client.user.verified
+    job.start();
+    test.start();
 })
 
 
