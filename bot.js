@@ -1,8 +1,7 @@
 // Load up the discord.js library
 const Discord = require("discord.js");
 const fetch = require('node-fetch');
-const cron = require('cron').CronJob;
-
+var CronJob = require('cron').CronJob;
 
 var pool = require('./database');
 
