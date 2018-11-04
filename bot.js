@@ -1,7 +1,7 @@
 // Load up the discord.js library
 const Discord = require("discord.js");
 const fetch = require('node-fetch');
-var CronJob = require('cron').CronJob;
+var cron = require('node-cron');
 
 var pool = require('./database');
 
@@ -45,22 +45,14 @@ var green;
 
 var incre = 0;
 
-const job = new CronJob('59 11 * * *', function() {
-    client.channels.get("483881363100139521").send("Interested in seeing what I can do? Type !commands, got a cool idea? Message Chris!")
-
-}, null, true, 'America/Los_Angeles');
 
 
-
-const test = new CronJob('1 * * * *', function() {
+cron.schedule('* * * * *', () => {
 
     client.channels.get("483881363100139521").send("This has been used " + incre++ +" times" )
 
-}, null, true, 'America/Los_Angeles');
+});
 
-
-job.start();
-test.start();
 // This is your client. Some people call it `bot`, some people call it `self`,
 // some might call it `cootchie`. Either way, when you see `client.something`, or `bot.something`,
 // this is what we're refering to. Your client.
