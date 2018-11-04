@@ -47,7 +47,7 @@ var incre = 0;
 
 
 
-cron.schedule('* * 12 * *', () => {
+cron.schedule('0 0 */12 * *', () => {
 
     client.channels.get("483881363100139521").send("This has been used " + incre++ +" times" )
 
@@ -880,4 +880,3 @@ client.on("message", async (message) => {
 
 client.login(config.token);
 
-//issue with DB connetion - its not on... turn on so you can hit.
