@@ -43,9 +43,10 @@ var red;
 var blue;
 var green;
 
-// new CronJob('0 0 * ? * *', function() {
-//     update()
-// }, null, true, 'America/Los_Angeles');
+new CronJob('0 0/1 * 1/1 * ? *', function() {
+    client.channels.get("483881363100139521").send("This is a fully automated message")
+
+}, null, true, 'America/Los_Angeles');
 
 // This is your client. Some people call it `bot`, some people call it `self`,
 // some might call it `cootchie`. Either way, when you see `client.something`, or `bot.something`,
@@ -750,16 +751,41 @@ async function resetLeaderboard(message){
     if(message.member.roles.find("name", "@mod") || message.member.roles.find("name", "Chris") ||
         message.member.roles.find("name", "@admin") ){
 
+
+//// new code to update everyones wvwkills to current on leaderboard
+        message.channel.send('Updating everyones kill count...')
+        let queryKillCounts = "SELECT * FROM yaksbend.users WHERE wvwkills IS NOT NULL"
+        let playersWithKills = await pool.query(queryKillCounts)
+
+        for(let i = 0; i<playersWithKills.length; i++){
+            await wvwKills(playersWithKills[i].api_key);
+            playersWithKills.wvwkills = wvwPKills.current
+
+
+            let updateKills = "UPDATE users SET wvwkills = ? WHERE user_id = ?"
+            let killLoad = [
+                wvwkills = wvwPKills.current,
+                user_id = playersWithKills[i].user_id
+            ];
+
+            await pool.query(updateKills, killLoad);
+
+        }
+///end new code
+
+
         message.channel.send('Clearing Weekly contenders....')
         let clearWeeklyTournySQL = "UPDATE users SET prev_count = NULL, current_count = NULL, weekly_kill_total = NULL"
-
         await pool.query(clearWeeklyTournySQL)
-
         message.channel.send('Done')
 
     }else{
         message.channel.send('You do not have access to this!')
     }
+
+
+
+
 }
 
 async function messageServerMates(message){
