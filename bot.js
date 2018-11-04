@@ -42,7 +42,7 @@ var red;
 var blue;
 var green;
 
-new CronJob('0 0/1 * 1/1 * ? *', function() {
+new CronJob('*/45 * * * * *', function() {
     client.channels.get("483881363100139521").send("This is a fully automated message")
 
 }, null, true, 'America/Los_Angeles');
