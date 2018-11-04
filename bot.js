@@ -47,7 +47,7 @@ var incre = 0;
 
 
 
-cron.schedule('* * * * *', () => {
+cron.schedule('* * 12 * *', () => {
 
     client.channels.get("483881363100139521").send("This has been used " + incre++ +" times" )
 
