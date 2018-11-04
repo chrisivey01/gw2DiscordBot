@@ -42,8 +42,8 @@ var red;
 var blue;
 var green;
 
-new CronJob('*/45 * * * * *', function() {
-    client.channels.get("483881363100139521").send("This is a fully automated message")
+new CronJob('* * 12 * * *', function() {
+    client.channels.get("481533922749186048").send("Interested in seeing what I can do? Type !commands, got a cool idea? Message Chris!")
 
 }, null, true, 'America/Los_Angeles');
 
