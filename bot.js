@@ -43,14 +43,22 @@ var blue;
 var green;
 
 
-var incre = 0;
+var minIncre = 0;
+var hourIncre = 0;
+var twelveIncre = 0;
 
 
 
+cron.schedule('0 */1 * * *', () => {
 
-cron.schedule('*/1 * * * *', () => {
+    client.channels.get("483881363100139521").send("This has been used " + hourIncre++ +" times --- 1 hour incre" )
 
-    client.channels.get("483881363100139521").send("This has been used " + incre++ +" times" )
+});
+
+
+cron.schedule('0 0 */12 * *', () => {
+
+    client.channels.get("483881363100139521").send("This has been used " + twelveIncre++ +" times --- 12 hour incre" )
 
 });
 
