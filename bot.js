@@ -881,4 +881,3 @@ client.on("message", async (message) => {
 
 client.login(config.token);
 
-//issue with DB connetion - its not on... turn on so you can hit.
