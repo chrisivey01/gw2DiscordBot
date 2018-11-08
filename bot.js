@@ -49,18 +49,18 @@ var twelveIncre = 0;
 
 
 
-cron.schedule('0 */1 * * *', () => {
-
-    client.channels.get("483881363100139521").send("Countdown to something HUUUUUUUUUGE!!" + hourIncre-- +" oh shit oh shit oh shit!!!" )
-
-});
-
-
-cron.schedule('0 */12 * * *', () => {
-
-    client.channels.get("483881363100139521").send("DK is a faggot!")
-
-});
+// cron.schedule('0 */1 * * *', () => {
+//
+//     client.channels.get("483881363100139521").send("Countdown to something HUUUUUUUUUGE!!" + hourIncre-- +" oh shit oh shit oh shit!!!" )
+//
+// });
+//
+//
+// cron.schedule('0 */12 * * *', () => {
+//
+//     client.channels.get("483881363100139521").send("DK is a faggot!")
+//
+// });
 
 // This is your client. Some people call it `bot`, some people call it `self`,
 // some might call it `cootchie`. Either way, when you see `client.something`, or `bot.something`,
