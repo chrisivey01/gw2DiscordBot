@@ -4,28 +4,9 @@ const fetch = require('node-fetch');
 var cron = require('node-cron');
 
 var pool = require('./database');
-
-// Polyfills
-//  https://github.com/uxitten/polyfill/blob/master/string.polyfill.js
-//  https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/padStart
-// if (!String.prototype.padStart) {
-//     String.prototype.padStart = function padStart(targetLength, padString) {
-//         targetLength = targetLength >> 0; //truncate if number, or convert non-number to 0;
-//         padString = String(typeof padString !== 'undefined' ? padString : ' ');
-//         if (this.length >= targetLength) {
-//             return String(this);
-//         } else {
-//             targetLength = targetLength - this.length;
-//             if (targetLength > padString.length) {
-//                 padString += padString.repeat(targetLength / padString.length); //append to original to ensure we are longer than needed
-//             }
-//             return padString.slice(0, targetLength) + String(this);
-//         }
-//     };
-// }
+var ybmodCommands = require('./modCommands')
 
 
-var worldCheck = [];
 var wvwPKills = [];
 var ybCount = 0;
 var linkCount = 0;
@@ -402,62 +383,108 @@ async function purge(message) {
             // let userToModify = client.users.get(result[i].user_id)
             let userToModify = client.guilds.get("476902310581239810").members.get(result[i].user_id)
             let verifiedRole = message.guild.roles.find(name => name.name === "Verified");
+            let commanderRole = message.guild.roles.find(name => name.name === "Commander");
+            let modedRole = message.guild.roles.find(name => name.name === "@mod");
+
             let spyRole = message.guild.roles.find(name => name.name === "Thinks They're Sneaky");
 
+            let userLeft = []
 
             //numbers will need to be changed for cooresponding servers
             if (worldCheck.world === 1003) {
                 ybCount++
                 try {
-                    await userToModify.addRole(verifiedRole.id)
-
-                    //ping sql db
-                    let sql = "UPDATE users SET on_yaks = ? WHERE api_key = ?"
-                    let nameShame = [
-                        on_yaks = 1,
-                        api_key = result[i].api_key
-                    ]
-                    await pool.query(sql, nameShame)
-
-                } catch (e) {
-                    console.log("User is no longer on server")
+                     userToModify.addRole(verifiedRole.id)
+                    result[i].on_yaks = 1
+                }catch(e){
+                    console.log("User left")
                 }
-            } else if (worldCheck.world === 1010) {
+            } else if ( worldCheck.world === 1010) {
                 linkCount++
+
                 try {
-                    await userToModify.addRole(verifiedRole.id)
-
-                    //ping sql db
-                    let sql = "UPDATE users SET on_yaks = ? WHERE api_key = ?"
-                    let nameShame = [
-                        on_yaks = 2,
-                        api_key = result[i].api_key
-                    ]
-                    await pool.query(sql, nameShame)
-
-
+                     userToModify.addRole(verifiedRole.id)
+                    result[i].on_yaks = 2;
                 } catch (e) {
-                    console.log("User is no longer on server")
+
+                    console.log("User left")
                 }
-            } else {
+            }else{
                 spyCount++
-                try {
-                    if (verifiedRole != undefined) {
-                        await userToModify.removeRole(verifiedRole.id)
-                        await userToModify.addRole(spyRole.id)
+                try{
+                    if( verifiedRole != undefined){
+                         userToModify.removeRole(verifiedRole.id)
+                         userToModify.addRole(spyRole.id)
                     }
 
-                    //ping sql db
-                    let sql = "UPDATE users SET on_yaks = ? WHERE api_key = ?"
-                    let nameShame = [
-                        on_yaks = 0,
-                        api_key = result[i].api_key
-                    ]
-                    await pool.query(sql, nameShame)
-                } catch (e) {
-                    console.log("User is no longer on server")
+                    if(commanderRole != undefined){
+                         userToModify.removeRole(commanderRole.id)
+                    }
+                    if(modedRole != undefined){
+                         userToModify.removeRole(modedRole.id)
+                    }
+                    result[i].on_yaks = 0;
+                }catch(e){
+                    console.log("User left")
                 }
             }
+
+
+            let sql = "UPDATE users SET on_yaks = ? WHERE api_key = ?"
+            let updatedCode = [
+                on_yaks = result[i].on_yaks,
+                api_key = result[i].api_key
+            ]
+            await pool.query(sql, updatedCode)
+
+            //
+            //         //ping sql db
+            //         let sql = "UPDATE users SET on_yaks = ? WHERE api_key = ?"
+            //         let nameShame = [
+            //             on_yaks = 1,
+            //             api_key = result[i].api_key
+            //         ]
+            //         await pool.query(sql, nameShame)
+            //
+            //     } catch (e) {
+            //         console.log("User is no longer on server")
+            //     }
+            // } else if (worldCheck.world === 1010) {
+            //     linkCount++
+            //     try {
+            //         await userToModify.addRole(verifiedRole.id)
+            //
+            //         //ping sql db
+            //         let sql = "UPDATE users SET on_yaks = ? WHERE api_key = ?"
+            //         let nameShame = [
+            //             on_yaks = 2,
+            //             api_key = result[i].api_key
+            //         ]
+            //         await pool.query(sql, nameShame)
+            //
+            //
+            //     } catch (e) {
+            //         console.log("User is no longer on server")
+            //     }
+            // } else {
+            //     spyCount++
+            //     try {
+            //         if (verifiedRole != undefined) {
+            //             await userToModify.removeRole(verifiedRole.id)
+            //             await userToModify.addRole(spyRole.id)
+            //         }
+            //
+            //         //ping sql db
+            //         let sql = "UPDATE users SET on_yaks = ? WHERE api_key = ?"
+            //         let nameShame = [
+            //             on_yaks = 0,
+            //             api_key = result[i].api_key
+            //         ]
+            //         await pool.query(sql, nameShame)
+            //     } catch (e) {
+            //         console.log("User is no longer on server")
+            //     }
+            // }
         }
 
         message.channel.send("YB Count: " + ybCount)
@@ -577,10 +604,6 @@ async function score(message) {
         }
       }
     );
-}
-
-async function weekly(message) {
-  message.reply("This command has been rolled into !kills.");
 }
 
 async function kills(message) {
@@ -709,9 +732,9 @@ async function update(message) {
         message.member.roles.find("name", "@admin") ) {
         let sql = "select * from users"
 
-        let result;
 
-        result = await pool.query(sql)
+
+        let result = await pool.query(sql)
 
 
         message.channel.send("Beginning update... this may take a few moments")
@@ -724,8 +747,12 @@ async function update(message) {
                 api_key = result[i].api_key
             ]
             await pool.query(insertSql, addAccount)
-
         }
+
+
+        let removeUsersSql = " DELETE FROM yaksbend.users WHERE account_id IS NULL"
+        let resultRemove = await pool.query(removeUsersSql);
+        message.channel.send("Removed: " + resultRemove.length + " users" )
         if (message)
             message.channel.send("Update completed!")
         else
