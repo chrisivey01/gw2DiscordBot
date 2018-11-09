@@ -4,7 +4,6 @@ const fetch = require('node-fetch');
 var cron = require('node-cron');
 
 var pool = require('./database');
-var ybmodCommands = require('./modCommands')
 
 
 var wvwPKills = [];
@@ -755,6 +754,7 @@ async function update(message) {
         message.channel.send("Removed: " + resultRemove.length + " users" )
         if (message)
             message.channel.send("Update completed!")
+
         else
             console.log('Job update complete!')
     }else{
