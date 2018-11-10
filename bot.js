@@ -393,7 +393,7 @@ async function purge(message) {
             if (worldCheck.world === 1003) {
                 ybCount++
                 try {
-                     userToModify.addRole(verifiedRole.id)
+                     await userToModify.addRole(verifiedRole.id)
                     result[i].on_yaks = 1
                 }catch(e){
                     console.log("User left")
@@ -402,7 +402,7 @@ async function purge(message) {
                 linkCount++
 
                 try {
-                     userToModify.addRole(verifiedRole.id)
+                     await userToModify.addRole(verifiedRole.id)
                     result[i].on_yaks = 2;
                 } catch (e) {
 
@@ -412,15 +412,15 @@ async function purge(message) {
                 spyCount++
                 try{
                     if( verifiedRole != undefined){
-                         userToModify.removeRole(verifiedRole.id)
-                         userToModify.addRole(spyRole.id)
+                        await userToModify.removeRole(verifiedRole.id)
+                         await userToModify.addRole(spyRole.id)
                     }
 
                     if(commanderRole != undefined){
-                         userToModify.removeRole(commanderRole.id)
+                        await userToModify.removeRole(commanderRole.id)
                     }
                     if(modedRole != undefined){
-                         userToModify.removeRole(modedRole.id)
+                         await userToModify.removeRole(modedRole.id)
                     }
                     result[i].on_yaks = 0;
                 }catch(e){
