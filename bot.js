@@ -371,6 +371,7 @@ async function purge(message) {
         }
 
         // var verifiedRole = roles.find((item) => item.name === "Verified")
+        let userLeft = []
 
         message.channel.send("Purge process beginning... this will take a few minutes")
         for (let i = 0; i < result.length; i++) {
@@ -387,7 +388,6 @@ async function purge(message) {
 
             let spyRole = message.guild.roles.find(name => name.name === "Thinks They're Sneaky");
 
-            let userLeft = []
 
             //numbers will need to be changed for cooresponding servers
             if (worldCheck.world === 1003) {
@@ -430,7 +430,6 @@ async function purge(message) {
                 }
             }
 
-            console.log(userLeft)
 
 
             let sql = "UPDATE users SET on_yaks = ? WHERE api_key = ?"
@@ -440,55 +439,10 @@ async function purge(message) {
             ]
             await pool.query(sql, updatedCode)
 
-            //
-            //         //ping sql db
-            //         let sql = "UPDATE users SET on_yaks = ? WHERE api_key = ?"
-            //         let nameShame = [
-            //             on_yaks = 1,
-            //             api_key = result[i].api_key
-            //         ]
-            //         await pool.query(sql, nameShame)
-            //
-            //     } catch (e) {
-            //         console.log("User is no longer on server")
-            //     }
-            // } else if (worldCheck.world === 1010) {
-            //     linkCount++
-            //     try {
-            //         await userToModify.addRole(verifiedRole.id)
-            //
-            //         //ping sql db
-            //         let sql = "UPDATE users SET on_yaks = ? WHERE api_key = ?"
-            //         let nameShame = [
-            //             on_yaks = 2,
-            //             api_key = result[i].api_key
-            //         ]
-            //         await pool.query(sql, nameShame)
-            //
-            //
-            //     } catch (e) {
-            //         console.log("User is no longer on server")
-            //     }
-            // } else {
-            //     spyCount++
-            //     try {
-            //         if (verifiedRole != undefined) {
-            //             await userToModify.removeRole(verifiedRole.id)
-            //             await userToModify.addRole(spyRole.id)
-            //         }
-            //
-            //         //ping sql db
-            //         let sql = "UPDATE users SET on_yaks = ? WHERE api_key = ?"
-            //         let nameShame = [
-            //             on_yaks = 0,
-            //             api_key = result[i].api_key
-            //         ]
-            //         await pool.query(sql, nameShame)
-            //     } catch (e) {
-            //         console.log("User is no longer on server")
-            //     }
-            // }
         }
+
+        console.log(userLeft)
+
 
         message.channel.send("YB Count: " + ybCount)
         message.channel.send("EBay Count: " + linkCount)
