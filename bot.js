@@ -393,10 +393,11 @@ async function purge(message) {
             if (worldCheck.world === 1003) {
                 ybCount++
                 try {
-                     await userToModify.addRole(verifiedRole.id)
                     result[i].on_yaks = 1
+
+                    await userToModify.addRole(verifiedRole.id)
                 }catch(e){
-                    console.log("User left")
+                    userLeft.push(result[i])
                 }
             } else if ( worldCheck.world === 1010) {
                 linkCount++
@@ -405,8 +406,8 @@ async function purge(message) {
                      await userToModify.addRole(verifiedRole.id)
                     result[i].on_yaks = 2;
                 } catch (e) {
+                    userLeft.push(result[i])
 
-                    console.log("User left")
                 }
             }else{
                 spyCount++
@@ -424,9 +425,12 @@ async function purge(message) {
                     }
                     result[i].on_yaks = 0;
                 }catch(e){
-                    console.log("User left")
+                    userLeft.push(result[i])
+
                 }
             }
+
+            console.log(userLeft)
 
 
             let sql = "UPDATE users SET on_yaks = ? WHERE api_key = ?"
