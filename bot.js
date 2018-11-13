@@ -706,15 +706,13 @@ async function update(message) {
             await pool.query(insertSql, addAccount)
         }
 
-
-        let removeUsersSql = " DELETE FROM yaksbend.users WHERE account_id IS NULL"
-        let resultRemove = await pool.query(removeUsersSql);
-        message.channel.send("Removed: " + resultRemove.length + " users" )
-        if (message)
+        //
+        // let removeUsersSql = " DELETE FROM yaksbend.users WHERE account_id IS NULL"
+        // let resultRemove = await pool.query(removeUsersSql);
+        // message.channel.send("Removed: " + resultRemove.length + " users" )
+        // if (message)
             message.channel.send("Update completed!")
 
-        else
-            console.log('Job update complete!')
     }else{
         message.channel.send('You do not have access to this!')
     }
@@ -817,6 +815,60 @@ async function messageServerMates(message){
     }
  }
 
+
+async function messageUnverifiedUsers(message){
+    //get roles
+    let verifiedRole = message.guild.roles.find(name => name.name === "Verified");
+    let commanderRole = message.guild.roles.find(name => name.name === "Commander");
+    let modedRole = message.guild.roles.find(name => name.name === "@mod");
+
+    //get all verified users on discord
+    let myScrewUp = message.guild.members.filter(member => { return member.roles.find("name", "Verified") })
+
+    //get all users from db
+    let selectUsersSql = 'SELECT * FROM users';
+    let result;
+    result = await pool.query(selectUsersSql)
+
+
+    await myScrewUp.forEach(function(member){
+        let discordUserId = member.user.id;
+        let discordUser = member.user
+
+        let userToModify = client.guilds.get("476902310581239810").members.get(discordUserId)
+
+        try {
+            if (result.find(function(u){
+                return u.user_id === discordUserId
+            })) {
+                userToModify.addRole(verifiedRole)
+            } else {
+                userToModify.removeRole(verifiedRole)
+                userToModify.removeRole(commanderRole)
+                userToModify.removeRole(modedRole)
+            }
+        }catch(e){
+            console.log(e)
+        }
+        message.channel.send('Done!')
+
+    })
+
+
+
+    // myScrewUp.forEach(user => {
+    //         if(user.find(""))
+    //     }
+    // )
+    // for(let i = 0; i<myScrewUp.length; i++){
+    //     if(myScrewUp.get(client.guilds.get("476902310581239810").members.get(result[i].user_id))){
+    //
+    //     }
+    // }
+
+
+}
+
 client.on("message", async (message) => {
     if (message.author.bot) return;
 
@@ -868,6 +920,8 @@ client.on("message", async (message) => {
         await resetLeaderboard(message);
     } else if(message.content.startsWith("!messageMates")) {
         await messageServerMates(message);
+    }else if(message.content.startsWith("!chris")) {
+        await messageUnverifiedUsers(message)
     }
 });
 
