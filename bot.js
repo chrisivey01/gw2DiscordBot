@@ -819,6 +819,7 @@ async function messageServerMates(message){
 async function messageUnverifiedUsers(message){
     //get roles
     let verifiedRole = message.guild.roles.find(name => name.name === "Verified");
+    let spyRole = message.guild.roles.find(name => name.name === "Thinks They're Sneaky")
     let commanderRole = message.guild.roles.find(name => name.name === "Commander");
     let modedRole = message.guild.roles.find(name => name.name === "@mod");
 
@@ -842,6 +843,7 @@ async function messageUnverifiedUsers(message){
                 return u.user_id === discordUserId
             })) {
                 userToModify.addRole(verifiedRole)
+                userToModify.removeRole(spyRole)
             } else {
                 userToModify.removeRole(verifiedRole)
                 userToModify.removeRole(commanderRole)
