@@ -852,8 +852,6 @@ async function messageUnverifiedUsers(message){
         }catch(e){
             console.log(e)
         }
-        message.channel.send('Done!')
-
     })
 
 
