@@ -1,4 +1,6 @@
 // Load up the discord.js library
+let serviceCalls = require("./serviceCalls");
+
 const Discord = require("discord.js");
 const fetch = require('node-fetch');
 var cron = require('node-cron');
@@ -26,6 +28,13 @@ var green;
 var minIncre = 0;
 var hourIncre = 12;
 var twelveIncre = 0;
+
+
+//new bot changes dec 2018
+let accountId;
+let myApi = '9F1DA7B3-F32A-024F-B76A-7A496E9A207F7EAF1AF3-DB60-493B-B4E5-5503BA064F6B';
+
+let holdText;
 
 
 
@@ -824,7 +833,7 @@ async function messageUnverifiedUsers(message){
     let modedRole = message.guild.roles.find(name => name.name === "@mod");
 
     //get all verified users on discord
-    let myScrewUp = message.guild.members.filter(member => { return member.roles.find("name", "Verified") })
+    let myScrewUp = message.guild.members.filter(member => { return member.roles.find(name =>  name.name === "Verified")})
 
     //get all users from db
     let selectUsersSql = 'SELECT * FROM users';
@@ -832,7 +841,7 @@ async function messageUnverifiedUsers(message){
     result = await pool.query(selectUsersSql)
 
 
-    await myScrewUp.forEach(function(member){
+    myScrewUp.forEach(function(member){
         let discordUserId = member.user.id;
         let discordUser = member.user
 
@@ -843,29 +852,156 @@ async function messageUnverifiedUsers(message){
                 return u.user_id === discordUserId
             })) {
                 userToModify.addRole(verifiedRole)
+                    .then(function(result){
+                        console.log(result)
+                    })
+                    .catch(function(err){
+                        console.log(err)
+                    })
                 userToModify.removeRole(spyRole)
+                    .then(function(result){
+                        console.log(result)
+                    })
+                    .catch(function(err){
+                        console.log(err)
+                    })
             } else {
                 userToModify.removeRole(verifiedRole)
+                    .then(function(result){
+                        console.log(result)
+                    })
+                    .catch(function(err){
+                        console.log(err)
+                    })
                 userToModify.removeRole(commanderRole)
+                    .then(function(result){
+                        console.log(result)
+                    })
+                    .catch(function(err){
+                        console.log(err)
+                    })
                 userToModify.removeRole(modedRole)
+                    .then(function(result){
+                        console.log(result)
+                    })
+                    .catch(function(err){
+                        console.log(err)
+                    })
             }
         }catch(e){
             console.log(e)
         }
     })
+}
+
+
+// __________________________ all new
 
 
 
-    // myScrewUp.forEach(user => {
-    //         if(user.find(""))
-    //     }
-    // )
-    // for(let i = 0; i<myScrewUp.length; i++){
-    //     if(myScrewUp.get(client.guilds.get("476902310581239810").members.get(result[i].user_id))){
-    //
-    //     }
-    // }
+const getAccountId = (message) => {
+    message.channel.send(`test`)
 
+    let url = `https://api.guildwars2.com/v2/account?access_token=${myApi}`
+
+    let gearUrl = `https://api.guildwars2.com/v2/characters/Chris%20Goes%20Deep/equipment?access_token=9F1DA7B3-F32A-024F-B76A-7A496E9A207F7EAF1AF3-DB60-493B-B4E5-5503BA064F6B`
+    fetch(url)
+        .then(results => results.json())
+        .then(results => {
+            accountId = results.name
+            message.channel.send(`ID: ${accountId}`)
+            fetch(gearUrl)
+                .then(results => results.json())
+                .then(results =>{
+                    console.log(results)
+                })
+        })
+}
+
+const getCharacters = (message) => {
+
+    let charactersUrl = `https://api.guildwars2.com/v2/characters?access_token=${myApi}`
+
+    fetch (charactersUrl)
+        .then(results => results.json())
+        .then(results => {
+            let characterArray;
+            characterArray = results;
+
+            message.channel.send(`Submit one of your characters: ${characterArray.toString()}`)
+        })
+}
+
+
+//submit API for multiple checks to see if valid or not.
+const getApiUid = (message) => {
+    let Uid = message.author.id;
+    let getText = message.content;
+    let obtainApi = getText.replace(`!submit `, ``)
+//get API/UID/ACCOUNT NAME and submit to DB
+        serviceCalls.apiChecker(obtainApi)
+            .then(results => {
+                let obtainResults = results;
+
+                if(obtainResults.text){
+                    return message.channel.send(`Invalid API try again!`)
+                }
+                //acount ID
+                obtainResults.name
+                obtainResults.id
+//obtain character list, needed to see if have it turned on.
+                serviceCalls.characterList(obtainApi)
+                    .then(results =>{
+                        let characters = results;
+                        serviceCalls.buildProgressionOn(obtainApi, characters[0])
+                            .then(buildOnCheck=> {
+                                if (!buildOnCheck.text) {
+                                    let submitAccountInfoSql = `INSERT INTO apiDiscordUid (api_key, uid, gw2_account_name) VALUES ?`
+                                    let values = [
+                                        [obtainResults.id, Uid, obtainResults.name]
+                                    ]
+                                    pool.query(submitAccountInfoSql, [values], (err, result) => {
+                                        if (err) throw err;
+                                        console.log("Number of records inserted: " + result.affectedRows);
+                                    })
+                                } else {
+                                    message.channel.send(`Please enable the BUILD progression`)
+                                }
+                            })
+                            .catch(err => {
+                                if(err){
+                                    return message.channel.send(`fucked up!`)
+                                }
+                            })
+
+                    })
+                    .catch(err => {
+                        if(err) {
+                            return message.channel.send(`An oopsy woopsy little fuckity wuckity has happened!`)
+                        }
+                    })
+            })
+            .catch(err => {
+                if(err) {
+                    return message.channel.send(`Invalid API try again!`)
+                }
+            })
+}
+
+const submitCharacter = (message) => {
+    let text = message.content
+    let character = text.replace(`!character `, ``)
+
+
+    serviceCalls.characterSubmit(myApi, character)
+        .then(results => {
+            if(results.equipment) {
+                for(let i = 0; i< results.equipment.length; i++)
+                {
+                    message.channel.send(results.equipment[i].slot)
+                }
+            }
+        })
 
 }
 
@@ -922,6 +1058,20 @@ client.on("message", async (message) => {
         await messageServerMates(message);
     }else if(message.content.startsWith("!chris")) {
         await messageUnverifiedUsers(message)
+
+
+
+
+
+    }else if(message.content.startsWith("!submit")) {
+        getApiUid(message)
+    }
+    else if(message.content.startsWith("!getAccountId")){
+        getAccountId(message)
+    }else if(message.content.startsWith("!getCharacters")){
+        getCharacters(message)
+    }else if(message.content.startsWith("!character")){
+        submitCharacter(message)
     }
 });
 
