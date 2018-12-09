@@ -226,7 +226,7 @@ function users(message) {
     let verifiedMembers = 0;
 
     for (let i = 0; i < totalMembers.length; i++) {
-        if (totalMembers[i][1].roles.has("477947826442338324")) {
+        if (totalMembers[i][1].roles.has("521361620950056970")) {
             verifiedMembers++
         }
     }
@@ -840,6 +840,7 @@ async function messageUnverifiedUsers(message){
     let result;
     result = await pool.query(selectUsersSql)
 
+    message.channel.send('Starting...')
 
     myScrewUp.forEach(function(member){
         let discordUserId = member.user.id;
@@ -853,45 +854,37 @@ async function messageUnverifiedUsers(message){
             })) {
                 userToModify.addRole(verifiedRole)
                     .then(function(result){
-                        console.log(result)
                     })
                     .catch(function(err){
-                        console.log(err)
                     })
                 userToModify.removeRole(spyRole)
                     .then(function(result){
-                        console.log(result)
                     })
                     .catch(function(err){
-                        console.log(err)
                     })
             } else {
                 userToModify.removeRole(verifiedRole)
                     .then(function(result){
-                        console.log(result)
                     })
                     .catch(function(err){
-                        console.log(err)
                     })
                 userToModify.removeRole(commanderRole)
                     .then(function(result){
-                        console.log(result)
                     })
                     .catch(function(err){
-                        console.log(err)
                     })
                 userToModify.removeRole(modedRole)
                     .then(function(result){
-                        console.log(result)
                     })
                     .catch(function(err){
-                        console.log(err)
                     })
             }
         }catch(e){
             console.log(e)
         }
     })
+    message.channel.send('Done!')
+
 }
 
 
@@ -992,17 +985,31 @@ const submitCharacter = (message) => {
     let text = message.content
     let character = text.replace(`!character `, ``)
 
-
+    // https://api.guildwars2.com/v1/item_details.json?item_id=70794
     serviceCalls.characterSubmit(myApi, character)
         .then(results => {
-            if(results.equipment) {
-                for(let i = 0; i< results.equipment.length; i++)
-                {
-                    message.channel.send(results.equipment[i].slot)
-                }
+            if (results.equipment) {
+                // results.equipment[i].id is what I need -- results.equipment[i[.slot is equipment
+
+                let resultsEquipArray = [...results.equipment]
+                let newEquipArray = []
+                //newEquipArray is now populated with just equipment slot and ID
+                resultsEquipArray.filter(eq => {
+                    let newObj = {}
+                    newObj.slot = eq.slot
+                    newObj.id = eq.id
+                    newEquipArray.push(newObj)
+                })
+
+                //make new obj array
+
+
+
+
+
+
             }
         })
-
 }
 
 client.on("message", async (message) => {
