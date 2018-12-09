@@ -838,9 +838,10 @@ async function messageUnverifiedUsers(message){
     //get all users from db
     let selectUsersSql = 'SELECT * FROM users';
     let result;
+    message.channel.send('Starting...')
+
     result = await pool.query(selectUsersSql)
 
-    message.channel.send('Starting...')
 
     myScrewUp.forEach(function(member){
         let discordUserId = member.user.id;
