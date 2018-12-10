@@ -17,7 +17,7 @@ var yaksBendServerID = 1003;
 var linkedServerID = 1010
 
 // Channels
-const chanKillCountsId = "494353907804536832";
+const chanKillCountsId = "521400998443352105";
 
 var servers = [];
 var red;
@@ -366,104 +366,104 @@ async function check(message) {
     }
 }
 
-async function purge(message) {
-    if (message.member.roles.find("name", "@mod") || message.member.roles.find("name", "Chris") ||
-        message.member.roles.find("name", "@admin")) {
-        var sql = "SELECT * FROM users"
-        var result;
-        try {
-            //gets one result back
-            result = await pool.query(sql)
-        } catch (err) {
-            throw new Error(err)
-        }
-
-        // var verifiedRole = roles.find((item) => item.name === "Verified")
-        let userLeft = []
-
-        message.channel.send("Purge process beginning... this will take a few minutes")
-        for (let i = 0; i < result.length; i++) {
-
-
-            await fetchBulk(result[i].api_key)
-
-            //get users from db
-            // let userToModify = client.users.get(result[i].user_id)
-            let userToModify = client.guilds.get("476902310581239810").members.get(result[i].user_id)
-            let verifiedRole = message.guild.roles.find(name => name.name === "Verified");
-            let commanderRole = message.guild.roles.find(name => name.name === "Commander");
-            let modedRole = message.guild.roles.find(name => name.name === "@mod");
-
-            let spyRole = message.guild.roles.find(name => name.name === "Thinks They're Sneaky");
-
-
-            //numbers will need to be changed for cooresponding servers
-            if (worldCheck.world === 1003) {
-                ybCount++
-                try {
-                    result[i].on_yaks = 1
-
-                    await userToModify.addRole(verifiedRole.id)
-                } catch (e) {
-                    userLeft.push(result[i])
-                }
-            } else if (worldCheck.world === 1010) {
-                linkCount++
-
-                try {
-                    await userToModify.addRole(verifiedRole.id)
-                    result[i].on_yaks = 2;
-                } catch (e) {
-                    userLeft.push(result[i])
-
-                }
-            } else {
-                spyCount++
-                try {
-                    if (verifiedRole != undefined) {
-                        await userToModify.removeRole(verifiedRole.id)
-                        await userToModify.addRole(spyRole.id)
-                    }
-
-                    if (commanderRole != undefined) {
-                        await userToModify.removeRole(commanderRole.id)
-                    }
-                    if (modedRole != undefined) {
-                        await userToModify.removeRole(modedRole.id)
-                    }
-                    result[i].on_yaks = 0;
-                } catch (e) {
-                    userLeft.push(result[i])
-
-                }
-            }
-
-
-            let sql = "UPDATE users SET on_yaks = ? WHERE api_key = ?"
-            let updatedCode = [
-                on_yaks = result[i].on_yaks,
-                api_key = result[i].api_key
-            ]
-            await pool.query(sql, updatedCode)
-
-        }
-
-        console.log(userLeft)
-
-
-        message.channel.send("YB Count: " + ybCount)
-        message.channel.send("EBay Count: " + linkCount)
-        message.channel.send("Spy Count: " + spyCount)
-
-        message.channel.send("Purge process finished!")
-
-        ybCount = 0;
-        linkCount = 0;
-        spyCount = 0;
-    } else {
-        message.channel.send('You do not have access to this!')
-    }
-}
+// async function purge(message) {
+//     if (message.member.roles.find("name", "@mod") || message.member.roles.find("name", "Chris") ||
+//         message.member.roles.find("name", "@admin")) {
+//         var sql = "SELECT * FROM users"
+//         var result;
+//         try {
+//             //gets one result back
+//             result = await pool.query(sql)
+//         } catch (err) {
+//             throw new Error(err)
+//         }
+//
+//         // var verifiedRole = roles.find((item) => item.name === "Verified")
+//         let userLeft = []
+//
+//         message.channel.send("Purge process beginning... this will take a few minutes")
+//         for (let i = 0; i < result.length; i++) {
+//
+//
+//             await fetchBulk(result[i].api_key)
+//
+//             //get users from db
+//             // let userToModify = client.users.get(result[i].user_id)
+//             let userToModify = client.guilds.get("476902310581239810").members.get(result[i].user_id)
+//             let verifiedRole = message.guild.roles.find(name => name.name === "Verified");
+//             let commanderRole = message.guild.roles.find(name => name.name === "Commander");
+//             let modedRole = message.guild.roles.find(name => name.name === "@mod");
+//
+//             let spyRole = message.guild.roles.find(name => name.name === "Thinks They're Sneaky");
+//
+//
+//             //numbers will need to be changed for cooresponding servers
+//             if (worldCheck.world === 1003) {
+//                 ybCount++
+//                 try {
+//                     result[i].on_yaks = 1
+//
+//                     await userToModify.addRole(verifiedRole.id)
+//                 } catch (e) {
+//                     userLeft.push(result[i])
+//                 }
+//             } else if (worldCheck.world === 1010) {
+//                 linkCount++
+//
+//                 try {
+//                     await userToModify.addRole(verifiedRole.id)
+//                     result[i].on_yaks = 2;
+//                 } catch (e) {
+//                     userLeft.push(result[i])
+//
+//                 }
+//             } else {
+//                 spyCount++
+//                 try {
+//                     if (verifiedRole != undefined) {
+//                         await userToModify.removeRole(verifiedRole.id)
+//                         await userToModify.addRole(spyRole.id)
+//                     }
+//
+//                     if (commanderRole != undefined) {
+//                         await userToModify.removeRole(commanderRole.id)
+//                     }
+//                     if (modedRole != undefined) {
+//                         await userToModify.removeRole(modedRole.id)
+//                     }
+//                     result[i].on_yaks = 0;
+//                 } catch (e) {
+//                     userLeft.push(result[i])
+//
+//                 }
+//             }
+//
+//
+//             let sql = "UPDATE users SET on_yaks = ? WHERE api_key = ?"
+//             let updatedCode = [
+//                 on_yaks = result[i].on_yaks,
+//                 api_key = result[i].api_key
+//             ]
+//             await pool.query(sql, updatedCode)
+//
+//         }
+//
+//         console.log(userLeft)
+//
+//
+//         message.channel.send("YB Count: " + ybCount)
+//         message.channel.send("EBay Count: " + linkCount)
+//         message.channel.send("Spy Count: " + spyCount)
+//
+//         message.channel.send("Purge process finished!")
+//
+//         ybCount = 0;
+//         linkCount = 0;
+//         spyCount = 0;
+//     } else {
+//         message.channel.send('You do not have access to this!')
+//     }
+// }
 
 async function score(message) {
     let wvwScores = await wvwScore()
@@ -882,185 +882,98 @@ async function messageUnverifiedUsers(message) {
     message.channel.send('Done!')
 }
 
-const verifyUnverifyUsers = (message) => {
+
+
+
+async function verifyUnverifyUsers(message) {
+    if (message.member.roles.find("name", "Mod") || message.member.roles.find("name", "@admin")) {
 //get all server users
-    let totalMembers = message.guild.members;
+        let totalMembers = message.guild.members;
 //array of IDs
-    let memberUniqueIdArray = []
-    totalMembers.forEach(function(member){
-        memberUniqueIdArray.push(member.user.id)
-    })
-    console.log(memberUniqueIdArray)
-
-    let verifiedRole = message.guild.roles.find(name => name.name === "Verified");
-    let commanderRole = message.guild.roles.find(name => name.name === "Commander");
-    let modedRole = message.guild.roles.find(name => name.name === "@mod");
-    let spyRole = message.guild.roles.find(name => name.name === "Thinks They're Sneaky");
-
-    let sql = "SELECT user_id, api_key, on_yaks FROM users WHERE user_id = ?"
-    let allUsersFromDB;
+        let memberUniqueIdArray = []
+        totalMembers.forEach(function (member) {
+            memberUniqueIdArray.push(member.user.id)
+        })
+        let verifiedRole = message.guild.roles.find(name => name.name === "Verified");
+        let commanderRole = message.guild.roles.find(name => name.name === "Commander");
+        let modedRole = message.guild.roles.find(name => name.name === "Mod");
+        let spyRole = message.guild.roles.find(name => name.name === "Thinks They're Sneaky");
 
 
+        let results;
+        let sql = `SELECT user_id, api_key, on_yaks FROM users WHERE user_id IN (?)`
+        results = await pool.query(sql, [memberUniqueIdArray])
 
-    pool.query(sql,[memberUniqueIdArray], (err, result) => {
-        if (err) throw err;
-        console.log(result)
-        allUsersFromDB = result;
+        for (let i = 0; i < results.length; i++) {
+            await serviceCalls.apiChecker(results[i].api_key)
+                .then(player => {
+                    let userToModify = client.guilds.get("476902310581239810").members.get(results[i].user_id)
 
-        message.channel.send("Purge process beginning... this will take a few minutes")
-        for (let i = 0; i < allUsersFromDB.length; i++) {
-            let userToModify = client.guilds.get("476902310581239810").members.get(allUsersFromDB[i].user_id)
-
-            serviceCalls.apiChecker(allUsersFromDB[i].api_key)
-                .then(results => {
-                    if (results.world === 1003) {
-                        ybCount++
-                        allUsersFromDB[i].on_yaks = 1
-                        userToModify.addRole(verifiedRole.id)
-                            .then(function (result) {
-                            })
-                            .catch(function (err) {
-                                console.log(err)
-                            })
-                    } else if (results.world === 1010) {
-                        linkCount++
-                        allUsersFromDB[i].on_yaks = 2
-                        userToModify.addRole(verifiedRole.id)
-                            .then(function (result) {
-                            })
-                            .catch(function (err) {
-                                console.log(err)
-                            })
-                    } else {
-                        spyCount++
-                        userToModify.addRole(spyRole.id)
-                            .then(function (result) {
-                            })
-                            .catch(function (err) {
-                                console.log(err)
-                            })
-                        userToModify.removeRole(verifiedRole.id)
-                            .then(function (result) {
-                            })
-                            .catch(function (err) {
-                                console.log(err)
-                            })
-                        userToModify.removeRole(commanderRole.id)
-                            .then(function (result) {
-                            })
-                            .catch(function (err) {
-                                console.log(err)
-                            })
-                        userToModify.removeRole(modedRole.id)
-                            .then(function (result) {
-                            })
-                            .catch(function (err) {
-                                console.log(err)
-                            })
+                    if (!player.text) {
+                        if (player.world === 1003) {
+                            ybCount++
+                            results[i].on_yaks = 1
+                            userToModify.addRole(verifiedRole.id)
+                                .then(function (result) {
+                                })
+                                .catch(function (err) {
+                                    console.log(err)
+                                })
+                        } else if (player.world === 1010) {
+                            linkCount++
+                            results[i].on_yaks = 2
+                            userToModify.addRole(verifiedRole.id)
+                                .then(function (result) {
+                                })
+                                .catch(function (err) {
+                                    console.log(err)
+                                })
+                        } else {
+                            spyCount++
+                            userToModify.addRole(spyRole.id)
+                                .then(function (result) {
+                                })
+                                .catch(function (err) {
+                                    console.log(err)
+                                })
+                            userToModify.removeRole(verifiedRole.id)
+                                .then(function (result) {
+                                })
+                                .catch(function (err) {
+                                    console.log(err)
+                                })
+                            userToModify.removeRole(commanderRole.id)
+                                .then(function (result) {
+                                })
+                                .catch(function (err) {
+                                    console.log(err)
+                                })
+                            userToModify.removeRole(modedRole.id)
+                                .then(function (result) {
+                                })
+                                .catch(function (err) {
+                                    console.log(err)
+                                })
+                        }
                     }
+
                 })
+            let updateStatus = "UPDATE users SET on_yaks = ? WHERE api_key = ?"
 
-                .then((allUsersFromDB) => {
-                    let updateStatus = "UPDATE users SET on_yaks = ? WHERE api_key = ?"
-
-                    let updatedCode = [
-                        on_yaks = allUsersFromDB[i].on_yaks,
-                        api_key = allUsersFromDB[i].api_key
-                    ]
-                    pool.query(updateStatus, updatedCode, (err, result) => {
-                        if (err) throw err;
-                    })
-                })
-
-                .then(() => {
-                    message.channel.send("YB Count: " + ybCount)
-                    message.channel.send("EBay Count: " + linkCount)
-                    message.channel.send("Spy Count: " + spyCount)
-
-                    message.channel.send("Purge process finished!")
-
-                    ybCount = 0;
-                    linkCount = 0;
-                    spyCount = 0;
-                })
+            let updatedCode = [
+                on_yaks = results[i].on_yaks,
+                api_key = results[i].api_key
+            ]
+            await pool.query(updateStatus, updatedCode)
         }
-    })
 
+        message.channel.send(`YB Count: ${ybCount} \n Ebay Count: ${linkCount} \n Spy Count: ${spyCount}`)
+        message.channel.send("Purge process finished!")
 
-    // fetchBulk(result[i].api_key)
-    //
-    // //get users from db
-    // db// let userToModify = client.users.get(result[i].user_id)
-
-    //
-    //
-    //
-    //     //numbers will need to be changed for cooresponding servers
-    //     if (worldCheck.world === 1003) {
-    //         ybCount++
-    //         try {
-    //             result[i].on_yaks = 1
-    //
-    //             await userToModify.addRole(verifiedRole.id)
-    //         }catch(e){
-    //             userLeft.push(result[i])
-    //         }
-    //     } else if ( worldCheck.world === 1010) {
-    //         linkCount++
-    //
-    //         try {
-    //             await userToModify.addRole(verifiedRole.id)
-    //             result[i].on_yaks = 2;
-    //         } catch (e) {
-    //             userLeft.push(result[i])
-    //
-    //         }
-    //     }else{
-    //         spyCount++
-    //         try{
-    //             if( verifiedRole != undefined){
-    //                 await userToModify.removeRole(verifiedRole.id)
-    //                 await userToModify.addRole(spyRole.id)
-    //             }
-    //
-    //             if(commanderRole != undefined){
-    //                 await userToModify.removeRole(commanderRole.id)
-    //             }
-    //             if(modedRole != undefined){
-    //                 await userToModify.removeRole(modedRole.id)
-    //             }
-    //             result[i].on_yaks = 0;
-    //         }catch(e){
-    //             userLeft.push(result[i])
-    //
-    //         }
-    //     }
-    //
-    //
-    //
-    //     let sql = "UPDATE users SET on_yaks = ? WHERE api_key = ?"
-    //     let updatedCode = [
-    //         on_yaks = result[i].on_yaks,
-    //         api_key = result[i].api_key
-    //     ]
-    //     await pool.query(sql, updatedCode)
-    //
-    // }
-    //
-    // console.log(userLeft)
-    //
-    //
-    // message.channel.send("YB Count: " + ybCount)
-    // message.channel.send("EBay Count: " + linkCount)
-    // message.channel.send("Spy Count: " + spyCount)
-    //
-    // message.channel.send("Purge process finished!")
-    //
-    // ybCount = 0;
-    // linkCount = 0;
-    // spyCount = 0;
-    //
-
+        ybCount = 0;
+        linkCount = 0;
+        spyCount = 0;
+    }
 }
 
 
@@ -1234,14 +1147,15 @@ client.on("message", async (message) => {
         await resetLeaderboard(message);
     } else if (message.content.startsWith("!messageMates")) {
         await messageServerMates(message);
-    } else if (message.content.startsWith("!verify")) {
-        await messageUnverifiedUsers(message)
+    // }
+    // else if (message.content.startsWith("!verify")) {
+    //     await messageUnverifiedUsers(message)
 
 
 //new stuff
 
-    } else if (message.content.startsWith("!newVerify")) {
-        verifyUnverifyUsers(message)
+    } else if (message.content.startsWith("!verify")) {
+        await verifyUnverifyUsers(message)
     } else if (message.content.startsWith("!submit")) {
         getApiUid(message)
     }
