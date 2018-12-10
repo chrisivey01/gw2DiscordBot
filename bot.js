@@ -899,7 +899,7 @@ async function verifyUnverifyUsers(message) {
         let modedRole = message.guild.roles.find(name => name.name === "Mod");
         let spyRole = message.guild.roles.find(name => name.name === "Thinks They're Sneaky");
 
-
+        message.channel.send('Purge process starting...')
         let results;
         let sql = `SELECT user_id, api_key, on_yaks FROM users WHERE user_id IN (?)`
         results = await pool.query(sql, [memberUniqueIdArray])
