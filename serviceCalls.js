@@ -29,10 +29,18 @@ module.exports = {
         let url = `https://api.guildwars2.com/v1/item_details.json?item_id=${itemId}`
         return fetch(url)
             .then(results => results.json())
-    }
+    },
 
     //need to get equipment and push ID, can forward it to yaksbend website for builds people are using? sounds like a good idea.
 
+
+
+
+    //obtain user data from DB
+
+    userData:function(){
+
+    }
 }
 
 
