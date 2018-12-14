@@ -1000,7 +1000,6 @@ const getAccountId = (message) => {
 }
 
 const getCharacters = (message) => {
-
     let charactersUrl = `https://api.guildwars2.com/v2/characters?access_token=${myApi}`
 
     fetch(charactersUrl)
@@ -1012,6 +1011,7 @@ const getCharacters = (message) => {
             message.channel.send(`Submit one of your characters: ${characterArray.toString()}`)
         })
 }
+
 
 
 //submit API for multiple checks to see if valid or not.
@@ -1044,6 +1044,8 @@ const getApiUid = (message) => {
                                 pool.query(submitAccountInfoSql, [values], (err, result) => {
                                     if (err) throw err;
                                     console.log("Number of records inserted: " + result.affectedRows);
+                                    message.channel.send(`Added to the DB! Now submit your character using !character [name]`)
+
                                 })
                             } else {
                                 message.channel.send(`Please enable the BUILD progression`)
@@ -1084,12 +1086,24 @@ const submitCharacter = (message) => {
                 //newEquipArray is now populated with just equipment slot and ID
                 resultsEquipArray.filter(eq => {
                     let newObj = {}
-                    newObj.slot = eq.slot
-                    newObj.id = eq.id
-                    newEquipArray.push(newObj)
+                    if(eq.slot !== "Aquatic" || eq.slot !== "Backpack" || eq.slot !== "WeaponAquaticA"
+                        || eq.slot !== "Sickle" || eq.slot !=="Axe" || eq.slot !=="Pick") {
+                        newObj.slot = eq.slot
+                        newObj.id = eq.id
+                        newEquipArray.push(newObj)
+                    }
                 })
 
                 //make new obj array
+
+                // newEquipArray.forEach(equip =>{
+                //     if{
+                //
+                //
+                //     }
+                // })
+
+
 
 
             }
