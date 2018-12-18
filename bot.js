@@ -577,7 +577,7 @@ async function leaderboard(message) {
 
 async function update(message) {
 
-    if (message.member.roles.find("name", "@mod") || message.member.roles.find("name", "Chris") ||
+    if (message.member.roles.find("name", "Mod")  || message.member.roles.find("name", "Chris") ||
         message.member.roles.find("name", "@admin")) {
         let sql = "select * from users"
 
@@ -612,7 +612,7 @@ async function update(message) {
 async function spyBlaster(message) {
 
 
-    if (message.member.roles.find("name", "@mod") || message.member.roles.find("name", "Chris") ||
+    if (message.member.roles.find("name", "Mod") || message.member.roles.find("name", "Chris") ||
         message.member.roles.find("name", "@admin")) {
 
 
@@ -637,7 +637,7 @@ async function spyBlaster(message) {
 
 async function resetLeaderboard(message) {
 
-    if (message.member.roles.find("name", "@mod") || message.member.roles.find("name", "Chris") ||
+    if (message.member.roles.find("name", "Mod")  || message.member.roles.find("name", "Chris") ||
         message.member.roles.find("name", "@admin")) {
 
 
@@ -952,21 +952,21 @@ const getApiUid = (message) => {
 }
 
 getGearNames = (charInfo) =>{
-    for (let i = 0; i < charInfo.length; i++) {
-        serviceCalls.gearCheck(charInfo[i].id)
-            .then(results => results)
-            .then(results => {
-                charInfo[i].name = results[0].name
-            })
-    }
-    return charInfo
+    return new Promise(resolve => {
+        for (let i = 0; i < charInfo.length; i++) {
+            serviceCalls.gearCheck(charInfo[i].id)
+                .then(results => {
+                    charInfo[i].name = results[0].name
+                })
+
+            if(i === charInfo.length - 1)
+                resolve()
+        }
+    })
 }
 
-getGearsWithoutStats = (characterEquipWithoutStatsIds) =>{
-    let characterEquipmentWithoutStats = []
-
-    serviceCalls.gearCheck(characterEquipWithoutStatsIds.toString())
-        .then(results => results)
+getGearsWithoutStats = (characterEquipmentWithoutStats, characterEquipWithoutStatsIds) =>{
+    return serviceCalls.gearCheck(characterEquipWithoutStatsIds.toString())
         .then(results =>{
             results.forEach(eq => {
                 let equipment = {}
@@ -977,7 +977,9 @@ getGearsWithoutStats = (characterEquipWithoutStatsIds) =>{
                 characterEquipmentWithoutStats.push(equipment)
             })
         })
-    return characterEquipmentWithoutStats
+        .catch(error => {
+            console.log(error)
+        })
 }
 
 const submitCharacter = (message) => {
@@ -985,7 +987,6 @@ const submitCharacter = (message) => {
     let uid = message.author.id;
     let text = message.content;
     let charactersEquipment = []
-    let characterEquipmentNowWithStats = []
     let characterEquipmentWithoutStats = []
     let allGear;
 
@@ -1017,17 +1018,25 @@ const submitCharacter = (message) => {
 
                 //filter to just ids
                 let characterEquipWithoutStatsIds = []
-                characterEquipmentWithoutStats.filter(eq => {
-                    return characterEquipWithoutStatsIds.push(eq.id)
+                characterEquipmentWithoutStats.forEach(eq => {
+                    characterEquipWithoutStatsIds.push(eq.id)
                 })
-                charactersEquipment = getGearNames(charactersEquipment)
-                characterEquipmentNowWithStats = getGearsWithoutStats(characterEquipWithoutStatsIds.toString())
-                console.log(charactersEquipment)
-                console.log(characterEquipmentNowWithStats)
-                // allGear = charactersEquipment.concat(characterEquipmentNowWithStats)
-                // console.log(allGear)
+                let characterEquipmentWoStats = []
+
+                allGear = Promise.all([getGearNames(charactersEquipment), getGearsWithoutStats(characterEquipmentWoStats, characterEquipWithoutStatsIds.toString())])
+                    .then(() => {
+                      allGear = [...charactersEquipment,...characterEquipmentWoStats]
+                        console.log(allGear)
+
+                    })
+                    .catch(err => {
+                        console.log(err)
+                    })
+
             }
         })
+
+    // let sql = 'INSERT INTO char_equip  fields '
 }
 
 // for(let i = 0; i<results.equipment.length; i++){
