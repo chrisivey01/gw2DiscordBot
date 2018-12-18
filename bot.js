@@ -951,9 +951,10 @@ const getApiUid = (message) => {
         })
 }
 
-async function  getGearNames(charInfo){
+getGearNames = (charInfo) =>{
     for (let i = 0; i < charInfo.length; i++) {
-       await serviceCalls.gearCheck(charInfo[i].id)
+        serviceCalls.gearCheck(charInfo[i].id)
+            .then(results => results)
             .then(results => {
                 charInfo[i].name = results[0].name
             })
@@ -961,10 +962,11 @@ async function  getGearNames(charInfo){
     return charInfo
 }
 
-async function getGearsWithoutStats(characterEquipWithoutStatsIds){
+getGearsWithoutStats = (characterEquipWithoutStatsIds) =>{
     let characterEquipmentWithoutStats = []
 
-    await serviceCalls.gearCheck(characterEquipWithoutStatsIds.toString())
+    serviceCalls.gearCheck(characterEquipWithoutStatsIds.toString())
+        .then(results => results)
         .then(results =>{
             results.forEach(eq => {
                 let equipment = {}
