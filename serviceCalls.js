@@ -3,13 +3,13 @@ const fetch = require('node-fetch');
 module.exports = {
     apiChecker:function(api) {
         let url = `https://api.guildwars2.com/v2/account?access_token=${api}`
-        return fetch(url)
+            return fetch(url)
             .then(results => results.json())
     },
 
     characterList:function(api){
-      let url = `https://api.guildwars2.com/v2/characters?access_token=${api}`
-        return fetch(url)
+        let url = `https://api.guildwars2.com/v2/characters?access_token=${api}`
+            return fetch(url)
             .then(results => results.json())
     },
 
@@ -25,8 +25,15 @@ module.exports = {
                 .then(results => results.json())
     },
 
-    gearCheck:function(itemId){
-        let url = `https://api.guildwars2.com/v2/items/${itemId}`
+    // //select all gear and shows stats
+    // checkGearStats:function(api, character){
+    //     let url =`https://api.guildwars2.com/v2/characters/${character}/equipment?access_token=${api}`
+    //         return fetch(url)
+    //             .then(results => results.json())
+    // },
+
+    gearCheck:function(itemIds){
+        let url = `https://api.guildwars2.com/v2/items?ids=${itemIds}`
         return fetch(url)
             .then(results => results.json())
     },

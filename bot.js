@@ -57,6 +57,7 @@ const client = new Discord.Client();
 
 // Here we load the config.json file that contains our token and our prefix values.
 const config = require("./auth.json");
+
 // config.token contains the bot's token
 // config.prefix contains the message prefix.
 
@@ -366,105 +367,6 @@ async function check(message) {
     }
 }
 
-// async function purge(message) {
-//     if (message.member.roles.find("name", "@mod") || message.member.roles.find("name", "Chris") ||
-//         message.member.roles.find("name", "@admin")) {
-//         var sql = "SELECT * FROM users"
-//         var result;
-//         try {
-//             //gets one result back
-//             result = await pool.query(sql)
-//         } catch (err) {
-//             throw new Error(err)
-//         }
-//
-//         // var verifiedRole = roles.find((item) => item.name === "Verified")
-//         let userLeft = []
-//
-//         message.channel.send("Purge process beginning... this will take a few minutes")
-//         for (let i = 0; i < result.length; i++) {
-//
-//
-//             await fetchBulk(result[i].api_key)
-//
-//             //get users from db
-//             // let userToModify = client.users.get(result[i].user_id)
-//             let userToModify = client.guilds.get("476902310581239810").members.get(result[i].user_id)
-//             let verifiedRole = message.guild.roles.find(name => name.name === "Verified");
-//             let commanderRole = message.guild.roles.find(name => name.name === "Commander");
-//             let modedRole = message.guild.roles.find(name => name.name === "@mod");
-//
-//             let spyRole = message.guild.roles.find(name => name.name === "Thinks They're Sneaky");
-//
-//
-//             //numbers will need to be changed for cooresponding servers
-//             if (worldCheck.world === 1003) {
-//                 ybCount++
-//                 try {
-//                     result[i].on_yaks = 1
-//
-//                     await userToModify.addRole(verifiedRole.id)
-//                 } catch (e) {
-//                     userLeft.push(result[i])
-//                 }
-//             } else if (worldCheck.world === 1010) {
-//                 linkCount++
-//
-//                 try {
-//                     await userToModify.addRole(verifiedRole.id)
-//                     result[i].on_yaks = 2;
-//                 } catch (e) {
-//                     userLeft.push(result[i])
-//
-//                 }
-//             } else {
-//                 spyCount++
-//                 try {
-//                     if (verifiedRole != undefined) {
-//                         await userToModify.removeRole(verifiedRole.id)
-//                         await userToModify.addRole(spyRole.id)
-//                     }
-//
-//                     if (commanderRole != undefined) {
-//                         await userToModify.removeRole(commanderRole.id)
-//                     }
-//                     if (modedRole != undefined) {
-//                         await userToModify.removeRole(modedRole.id)
-//                     }
-//                     result[i].on_yaks = 0;
-//                 } catch (e) {
-//                     userLeft.push(result[i])
-//
-//                 }
-//             }
-//
-//
-//             let sql = "UPDATE users SET on_yaks = ? WHERE api_key = ?"
-//             let updatedCode = [
-//                 on_yaks = result[i].on_yaks,
-//                 api_key = result[i].api_key
-//             ]
-//             await pool.query(sql, updatedCode)
-//
-//         }
-//
-//         console.log(userLeft)
-//
-//
-//         message.channel.send("YB Count: " + ybCount)
-//         message.channel.send("EBay Count: " + linkCount)
-//         message.channel.send("Spy Count: " + spyCount)
-//
-//         message.channel.send("Purge process finished!")
-//
-//         ybCount = 0;
-//         linkCount = 0;
-//         spyCount = 0;
-//     } else {
-//         message.channel.send('You do not have access to this!')
-//     }
-// }
-
 async function score(message) {
     let wvwScores = await wvwScore()
 
@@ -526,25 +428,6 @@ async function score(message) {
     let allScoresMaxLength = allScores.sort(function (a, b) {
         return b.length - a.length;
     })[0].length;
-
-    /*
-    message.channel.send(
-        'Total WVW Scores ----> ' + '\n' +
-        red[0].name + ' Score: ' + redScore + '\n' +
-        blue[0].name + ' Score: ' + blueScore + '\n' +
-        green[0].name + ' Score: ' + greenScore + '\n' +
-
-        'Total Skirmish Point ---->' + '\n' +
-        red[0].name + ' Skirmish Total: ' + redSkirm + '\n' +
-        blue[0].name + ' Skirmish Total: ' + blueSkirm + '\n' +
-        green[0].name + ' Skirmish Total: ' + greenSkirm + '\n' +
-
-        'Current Skirmish Scores ---->' + '\n' +
-        red[0].name + ' Current Skirmish: ' + currentRed + '\n' +
-        blue[0].name + ' Current Skirmish: ' + currentBlue + '\n' +
-        green[0].name + ' Current Skirmish: ' + currentGreen + '\n'
-    )
-    */
     message.channel.send(
         {
             "embed": {
@@ -883,8 +766,6 @@ async function messageUnverifiedUsers(message) {
 }
 
 
-
-
 async function verifyUnverifyUsers(message) {
     if (message.member.roles.find("name", "Mod") || message.member.roles.find("name", "@admin")) {
 //get all server users
@@ -1013,7 +894,6 @@ const getCharacters = (message) => {
 }
 
 
-
 //submit API for multiple checks to see if valid or not.
 const getApiUid = (message) => {
     let Uid = message.author.id;
@@ -1071,44 +951,171 @@ const getApiUid = (message) => {
         })
 }
 
+async function  getGearNames(charInfo){
+    for (let i = 0; i < charInfo.length; i++) {
+       await serviceCalls.gearCheck(charInfo[i].id)
+            .then(results => {
+                charInfo[i].name = results[0].name
+            })
+    }
+    return charInfo
+}
+
+async function getGearsWithoutStats(characterEquipWithoutStatsIds){
+    let characterEquipmentWithoutStats = []
+
+    await serviceCalls.gearCheck(characterEquipWithoutStatsIds.toString())
+        .then(results =>{
+            results.forEach(eq => {
+                let equipment = {}
+                equipment.id = eq.id
+                equipment.slot = eq.details.type
+                equipment.stats = eq.details.infix_upgrade.attributes
+                equipment.name = eq.name
+                characterEquipmentWithoutStats.push(equipment)
+            })
+        })
+    return characterEquipmentWithoutStats
+}
+
 const submitCharacter = (message) => {
-    let text = message.content
-    let character = text.replace(`!character `, ``)
+    //get UID
+    let uid = message.author.id;
+    let text = message.content;
+    let charactersEquipment = []
+    let characterEquipmentNowWithStats = []
+    let characterEquipmentWithoutStats = []
+    let allGear;
+
+
+    let gw2Char = text.replace(`!character `, ``)
 
     // https://api.guildwars2.com/v1/item_details.json?item_id=70794
-    serviceCalls.characterSubmit(myApi, character)
+    serviceCalls.characterSubmit(myApi, gw2Char)
         .then(results => {
             if (results.equipment) {
-                // results.equipment[i].id is what I need -- results.equipment[i[.slot is equipment
-
-                let resultsEquipArray = [...results.equipment]
-                let newEquipArray = []
-                //newEquipArray is now populated with just equipment slot and ID
-                resultsEquipArray.filter(eq => {
-                    let newObj = {}
-                    if(eq.slot !== "Aquatic" || eq.slot !== "Backpack" || eq.slot !== "WeaponAquaticA"
-                        || eq.slot !== "Sickle" || eq.slot !=="Axe" || eq.slot !=="Pick") {
-                        newObj.slot = eq.slot
-                        newObj.id = eq.id
-                        newEquipArray.push(newObj)
+                results.equipment.forEach(eq => {
+                    let equipment = {}
+                    let equipmentWithoutStats = {}
+                    if (eq.hasOwnProperty('stats')) {
+                        if (eq.stats.hasOwnProperty('attributes')) {
+                            equipment.id = eq.id
+                            equipment.slot = eq.slot
+                            equipment.stats = eq.stats
+                            charactersEquipment.push(equipment)
+                        }
+                    } else {
+                        if (eq.slot !== "HelmAquatic" && eq.slot !== "Sickle" && eq.slot !== "Axe" && eq.slot !== "Pick" && "WeaponAquaticA") {
+                            equipmentWithoutStats.id = eq.id
+                            equipmentWithoutStats.slot = eq.slot
+                            characterEquipmentWithoutStats.push(equipmentWithoutStats)
+                        }
                     }
                 })
 
-                //make new obj array
-
-                // newEquipArray.forEach(equip =>{
-                //     if{
-                //
-                //
-                //     }
-                // })
-
-
-
-
+                //filter to just ids
+                let characterEquipWithoutStatsIds = []
+                characterEquipmentWithoutStats.filter(eq => {
+                    return characterEquipWithoutStatsIds.push(eq.id)
+                })
+                charactersEquipment = getGearNames(charactersEquipment)
+                characterEquipmentNowWithStats = getGearsWithoutStats(characterEquipWithoutStatsIds.toString())
+                console.log(charactersEquipment)
+                console.log(characterEquipmentNowWithStats)
+                // allGear = charactersEquipment.concat(characterEquipmentNowWithStats)
+                // console.log(allGear)
             }
         })
 }
+
+// for(let i = 0; i<results.equipment.length; i++){
+//
+//     if (results.equipment[i].hasOwnProperty('stats')) {
+//         if (results.equipment[i].stats.hasOwnProperty('attributes')) {
+//             equipment.id = results.equipment[i].id
+//             equipment.slot = results.equipment[i].slot
+//             equipment.stats = results.equipment[i].stats
+//             charactersEquipment.push(equipment)
+//         }
+//     }
+// }
+// charactersEquipment = getGearNames(charactersEquipment)
+// console.log(charactersEquipment)
+
+// results.equipment[i].id is what I need -- results.equipment[i[.slot is equipment
+
+// let resultsEquipArray = [...results.equipment]
+// let newEquipArray = []
+// //newEquipArray is now populated with just equipment slot and ID
+// resultsEquipArray.filter(eq => {
+//     let newObj = {}
+//     if(eq.slot !== "Backpack" && eq.slot !== "HelmAquatic" && eq.slot !== "WeaponAquaticA"
+//         && eq.slot !== "Sickle" && eq.slot !=="Axe" && eq.slot !=="Pick") {
+//         newObj.slot = eq.slot
+//         newObj.id = eq.id
+//         newEquipArray.push(newObj)
+//     }
+// })
+//
+// let equipIdsArray = []
+// //filtered equipment Ids
+// newEquipArray.filter(equipIds => {
+//     equipIdsArray.push(equipIds.id)
+// })
+// //sends all IDs to fetch request
+// serviceCalls.gearCheck(equipIdsArray.toString())
+//     .then(resultsFromAnet => {
+//         resultsFromAnet.forEach(eqName => {
+//             console.log(eqName.name)
+//         })
+//         let helmet;
+//         let chest;
+//         let shoulders;
+//         let leggings;
+//         let boots;
+//         let gloves;
+//         let ring1;
+//         let ring2;
+//         let accessory1;
+//         let accessory2;
+//         let amulet;
+//         let weaponA1;
+//         let weaponA2;
+//         let weaponB1;
+//         let weaponB2;
+//
+//         console.log(results)
+//
+//         let insertSql = `INSERT INTO uid_character_gear (uid, gw2Char, helmet, chest, shoulders, leggings, boots, gloves, ring1, ring2, accessory1, accessory2, amulet, weaponA1, weaponA2,weaponB1,weaponB2) VALUES ?`
+//         let values = {
+//             uid:uid,
+//             character_name:gw2Char,
+//             helmet:helmet,
+//             chest:chest,
+//             shoulders:shoulders,
+//             leggings:leggings,
+//             boots:boots,
+//             gloves:gloves,
+//             ring1:ring1,
+//             ring2:ring2,
+//             accessory1:accessory1,
+//             accessory2:accessory2,
+//             amulet:amulet,
+//             weaponA1:weaponA1,
+//             weaponA2:weaponA2,
+//             weaponB1:weaponB1,
+//             weaponB2:weaponB2
+//         }
+//     })
+//make new obj array
+
+// newEquipArray.forEach(equip =>{
+//     if{
+//
+//
+//     }
+// })
+
 
 client.on("message", async (message) => {
     if (message.author.bot) return;
@@ -1161,9 +1168,9 @@ client.on("message", async (message) => {
         await resetLeaderboard(message);
     } else if (message.content.startsWith("!messageMates")) {
         await messageServerMates(message);
-    // }
-    // else if (message.content.startsWith("!verify")) {
-    //     await messageUnverifiedUsers(message)
+        // }
+        // else if (message.content.startsWith("!verify")) {
+        //     await messageUnverifiedUsers(message)
 
 
 //new stuff
