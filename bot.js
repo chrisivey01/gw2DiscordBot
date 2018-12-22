@@ -800,7 +800,7 @@ async function verifyUnverifyUsers(message) {
                                 .catch(function (err) {
                                     console.log(err)
                                 })
-                        } else if (player.world === 1010) {
+                        } else if (player.world === linkedServerID) {
                             linkCount++
                             results[i].on_yaks = 2
                             userToModify.addRole(verifiedRole.id)
