@@ -848,7 +848,7 @@ async function verifyUnverifyUsers(message) {
             await pool.query(updateStatus, updatedCode)
         }
 
-        message.channel.send(`YB Count: ${ybCount} \n Ebay Count: ${linkCount} \n Spy Count: ${spyCount}`)
+        message.channel.send(`YB Count: ${ybCount} \n Link Count: ${linkCount} \n Spy Count: ${spyCount}`)
         message.channel.send("Purge process finished!")
 
         ybCount = 0;
