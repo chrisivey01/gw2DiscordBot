@@ -330,12 +330,13 @@ async function keyAdd(message) {
         let verifiedRole = message.guild.roles.find("name", "Verified");
 
         //TODO THIS NEEDS TO CHANGE ALL THE TIME
-        for(let i = 0; i<linkedServerID; i++){
-        if (worldCheck.world === linkedServerID || worldCheck.world === linkedServerID1 || worldCheck.world === linkedServerID2) {
-            await userToModify.addRole(verifiedRole.id)
-            message.channel.send("You've been verified! Type !commands to see what I can do.")
-        } else {
-            message.channel.send("You do not belong to YB or Links")
+        for (let i = 0; i < linkedServerID; i++) {
+            if (worldCheck.world === linkedServerID || worldCheck.world === linkedServerID1 || worldCheck.world === linkedServerID2) {
+                await userToModify.addRole(verifiedRole.id)
+                message.channel.send("You've been verified! Type !commands to see what I can do.")
+            } else {
+                message.channel.send("You do not belong to YB or Links")
+            }
         }
     }
 }
@@ -363,7 +364,7 @@ async function check(message) {
 
     if (worldCheck.world === 1003) {
         message.channel.send("Yb Native")
-    } else if (worldCheck.world === linkedServerID || worldCheck.world === linkedServerID1 || worldCheck.world === linkedServerID2 ) {
+    } else if (worldCheck.world === linkedServerID || worldCheck.world === linkedServerID1 || worldCheck.world === linkedServerID2) {
         message.channel.send("Link Native")
     } else {
         message.channel.send("Spy")
@@ -803,7 +804,7 @@ async function verifyUnverifyUsers(message) {
                                 .catch(function (err) {
                                     console.log(err)
                                 })
-                        } else if (player.world === linkedServerID || player.world === linkedServerID1 || player.world === linkedServerID2  ) {
+                        } else if (player.world === linkedServerID || player.world === linkedServerID1 || player.world === linkedServerID2) {
                             linkCount++
                             results[i].on_yaks = 2
                             userToModify.addRole(verifiedRole.id)
@@ -955,14 +956,14 @@ const getApiUid = (message) => {
 }
 
 //I HATE PROMISESSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
-const getGearNames =(charInfo) =>{
-    return new Promise( (resolve, reject) => {
+const getGearNames = (charInfo) => {
+    return new Promise((resolve, reject) => {
         if (charInfo.length > 0) {
             for (let i = 0; i < charInfo.length; i++) {
                 serviceCalls.gearCheck(charInfo[i].id)
                     .then(results => {
                         charInfo[i].name = results[0].name
-                        if(i == charInfo.length - 1){
+                        if (i == charInfo.length - 1) {
                             resolve();
                             return charInfo;
                         }
@@ -995,7 +996,7 @@ const getGearsWithoutStats = (characterGearNowWithStats, characterEquipWithoutSt
                 let equipment = {}
                 equipment.id = eq.id
                 equipment.slot = eq.details.type
-                if(eq.details.hasOwnProperty("infix_upgrade")) {
+                if (eq.details.hasOwnProperty("infix_upgrade")) {
                     equipment.stats = eq.details.infix_upgrade.attributes
                 }
                 equipment.name = eq.name
@@ -1063,7 +1064,7 @@ async function submitCharacter(message) {
                 results.equipment.forEach(eq => {
                     let equipment = {}
                     let equipmentWithoutStats = {}
-                    if (eq.slot !== "HelmAquatic" && eq.slot !== "Sickle" &&  eq.slot !== "Logging" &&   eq.slot !== "Foraging" && eq.slot !== "Pick" && "WeaponAquaticA") {
+                    if (eq.slot !== "HelmAquatic" && eq.slot !== "Sickle" && eq.slot !== "Logging" && eq.slot !== "Foraging" && eq.slot !== "Pick" && "WeaponAquaticA") {
                         if (eq.hasOwnProperty('stats')) {
                             if (eq.stats.hasOwnProperty('attributes')) {
                                 equipment.id = eq.id
@@ -1086,7 +1087,6 @@ async function submitCharacter(message) {
                 })
 
 
-
                 let promiseArray = [getGearNames(charactersEquipment), getGearsWithoutStats(characterGearNowWithStats, characterEquipWithoutStatsIds.toString())]
                 Promise.all(promiseArray)
                     .then((value) => {
@@ -1101,114 +1101,114 @@ async function submitCharacter(message) {
 
                     })
 
-                    // .then(()=>{
-                    //
-                    //
-                    //     //params
-                    //     let uid = allGear.uid
-                    //     let char_name = allGear.character_name
-                    //
-                    //     let helmet = equipFilter(allGear.filter(equip => {
-                    //         if (equip.slot === "Helm") {
-                    //             return equip
-                    //         }
-                    //     }))
-                    //     let chest = equipFilter(allGear.filter(equip => {
-                    //         if (equip.slot === "Coat") {
-                    //             return equip
-                    //         }
-                    //     }))
-                    //     let shoulders = equipFilter(allGear.filter(equip => {
-                    //         if (equip.slot === "Shoulders") {
-                    //             return equip
-                    //         }
-                    //     }))
-                    //     let leggings = equipFilter(allGear.filter(equip => {
-                    //         if (equip.slot === "Leggings") {
-                    //             return equip
-                    //         }
-                    //     }))
-                    //     let boots = equipFilter(allGear.filter(equip => {
-                    //         if (equip.slot === "Boots") {
-                    //             return equip
-                    //         }
-                    //     }))
-                    //     let gloves = equipFilter(allGear.filter(equip => {
-                    //         if (equip.slot === "Gloves") {
-                    //             return equip
-                    //         }
-                    //     }))
-                    //     let ring1 = equipFilter(allGear.filter(equip => {
-                    //         if (equip.slot === "Ring1" || equip.slot === "Ring") {
-                    //             return equip
-                    //         }
-                    //     }))
-                    //     let ring2 = equipFilter(allGear.filter(equip => {
-                    //         if (equip.slot === "Ring2" || equip.slot === "Ring") {
-                    //             return equip
-                    //         }
-                    //     }))
-                    //     let accessory1 = equipFilter(allGear.filter(equip => {
-                    //         if (equip.slot === "Accessory1" || equip.slot === "Accessory") {
-                    //             return equip
-                    //         }
-                    //     }))
-                    //     let accessory2 = equipFilter(allGear.filter(equip => {
-                    //         if (equip.slot === "Accessory2" || equip.slot === "Accessory") {
-                    //             return equip
-                    //         }
-                    //     }))
-                    //     let amulet = equipFilter(allGear.filter(equip => {
-                    //         if (equip.slot === "Amulet") {
-                    //             return equip
-                    //         }
-                    //     }))
-                    //     let weapona1 = equipFilter(allGear.filter(equip => {
-                    //         if (equip.slot === "WeaponA1" || equip.slot === "Axe" || equip.slot === "Shield") {
-                    //             return equip
-                    //         }
-                    //     }))
-                    //     let weapona2 = equipFilter(allGear.filter(equip => {
-                    //         if (equip.slot === "WeaponA2" || equip.slot === "Axe" || equip.slot === "Shield") {
-                    //             return equip
-                    //         }
-                    //     }))
-                    //     let weaponb1 = equipFilter(allGear.filter(equip => {
-                    //         if (equip.slot === "WeaponB1" || equip.slot === "Axe" || equip.slot === "Shield") {
-                    //             return equip
-                    //         }
-                    //     }))
-                    //     let weaponb2 = equipFilter(allGear.filter(equip => {
-                    //         if (equip.slot === "WeaponB2" || equip.slot === "Axe" || equip.slot === "Shield") {
-                    //             return equip
-                    //         }
-                    //     }))
-                    //     let backpack = equipFilter(allGear.filter(equip => {
-                    //         if (equip.slot === "Backpack") {
-                    //             return equip
-                    //         }
-                    //     }))
-                    //
-                    //
-                    //     message.channel.send("Current Gear for: " + char_name + "\n" +
-                    //         "Helmet:" + helmet.replace(',', ' ') + "\n" +
-                    //         "Chest:" + chest.replace(',', ' ') + "\n" +
-                    //         "Shoulders:" + shoulders.replace(',', ' ') + "\n" +
-                    //         "Leggings:" + leggings.replace(',', ' ') + "\n" +
-                    //         "Boots:" + boots.replace(',', ' ') + "\n" +
-                    //         "Gloves:" + gloves.replace(',', ' ') + "\n" +
-                    //         "Ring1:" + ring1.replace(',', ' ') + "\n" +
-                    //         "Ring2:" + ring2.replace(',', ' ') + "\n" +
-                    //         "Accessory1:" + accessory1.replace(',', ' ') + "\n" +
-                    //         "Accessory2:" + accessory2.replace(',', ' ') + "\n" +
-                    //         "Amulet:" + amulet.replace(',', ' ') + "\n" +
-                    //         "WeaponA1:" + weapona1.replace(',', ' ') + "\n" +
-                    //         "WeaponA2:" + weapona2.replace(',', ' ') + "\n" +
-                    //         "WeaponB1:" + weaponb1.replace(',', ' ') + "\n" +
-                    //         "WeaponB2:" + weaponb2.replace(',', ' ') + "\n" +
-                    //         "Backpack:" + backpack.replace(',', ' '));
-                    //
-                    // })
+                // .then(()=>{
+                //
+                //
+                //     //params
+                //     let uid = allGear.uid
+                //     let char_name = allGear.character_name
+                //
+                //     let helmet = equipFilter(allGear.filter(equip => {
+                //         if (equip.slot === "Helm") {
+                //             return equip
+                //         }
+                //     }))
+                //     let chest = equipFilter(allGear.filter(equip => {
+                //         if (equip.slot === "Coat") {
+                //             return equip
+                //         }
+                //     }))
+                //     let shoulders = equipFilter(allGear.filter(equip => {
+                //         if (equip.slot === "Shoulders") {
+                //             return equip
+                //         }
+                //     }))
+                //     let leggings = equipFilter(allGear.filter(equip => {
+                //         if (equip.slot === "Leggings") {
+                //             return equip
+                //         }
+                //     }))
+                //     let boots = equipFilter(allGear.filter(equip => {
+                //         if (equip.slot === "Boots") {
+                //             return equip
+                //         }
+                //     }))
+                //     let gloves = equipFilter(allGear.filter(equip => {
+                //         if (equip.slot === "Gloves") {
+                //             return equip
+                //         }
+                //     }))
+                //     let ring1 = equipFilter(allGear.filter(equip => {
+                //         if (equip.slot === "Ring1" || equip.slot === "Ring") {
+                //             return equip
+                //         }
+                //     }))
+                //     let ring2 = equipFilter(allGear.filter(equip => {
+                //         if (equip.slot === "Ring2" || equip.slot === "Ring") {
+                //             return equip
+                //         }
+                //     }))
+                //     let accessory1 = equipFilter(allGear.filter(equip => {
+                //         if (equip.slot === "Accessory1" || equip.slot === "Accessory") {
+                //             return equip
+                //         }
+                //     }))
+                //     let accessory2 = equipFilter(allGear.filter(equip => {
+                //         if (equip.slot === "Accessory2" || equip.slot === "Accessory") {
+                //             return equip
+                //         }
+                //     }))
+                //     let amulet = equipFilter(allGear.filter(equip => {
+                //         if (equip.slot === "Amulet") {
+                //             return equip
+                //         }
+                //     }))
+                //     let weapona1 = equipFilter(allGear.filter(equip => {
+                //         if (equip.slot === "WeaponA1" || equip.slot === "Axe" || equip.slot === "Shield") {
+                //             return equip
+                //         }
+                //     }))
+                //     let weapona2 = equipFilter(allGear.filter(equip => {
+                //         if (equip.slot === "WeaponA2" || equip.slot === "Axe" || equip.slot === "Shield") {
+                //             return equip
+                //         }
+                //     }))
+                //     let weaponb1 = equipFilter(allGear.filter(equip => {
+                //         if (equip.slot === "WeaponB1" || equip.slot === "Axe" || equip.slot === "Shield") {
+                //             return equip
+                //         }
+                //     }))
+                //     let weaponb2 = equipFilter(allGear.filter(equip => {
+                //         if (equip.slot === "WeaponB2" || equip.slot === "Axe" || equip.slot === "Shield") {
+                //             return equip
+                //         }
+                //     }))
+                //     let backpack = equipFilter(allGear.filter(equip => {
+                //         if (equip.slot === "Backpack") {
+                //             return equip
+                //         }
+                //     }))
+                //
+                //
+                //     message.channel.send("Current Gear for: " + char_name + "\n" +
+                //         "Helmet:" + helmet.replace(',', ' ') + "\n" +
+                //         "Chest:" + chest.replace(',', ' ') + "\n" +
+                //         "Shoulders:" + shoulders.replace(',', ' ') + "\n" +
+                //         "Leggings:" + leggings.replace(',', ' ') + "\n" +
+                //         "Boots:" + boots.replace(',', ' ') + "\n" +
+                //         "Gloves:" + gloves.replace(',', ' ') + "\n" +
+                //         "Ring1:" + ring1.replace(',', ' ') + "\n" +
+                //         "Ring2:" + ring2.replace(',', ' ') + "\n" +
+                //         "Accessory1:" + accessory1.replace(',', ' ') + "\n" +
+                //         "Accessory2:" + accessory2.replace(',', ' ') + "\n" +
+                //         "Amulet:" + amulet.replace(',', ' ') + "\n" +
+                //         "WeaponA1:" + weapona1.replace(',', ' ') + "\n" +
+                //         "WeaponA2:" + weapona2.replace(',', ' ') + "\n" +
+                //         "WeaponB1:" + weaponb1.replace(',', ' ') + "\n" +
+                //         "WeaponB2:" + weaponb2.replace(',', ' ') + "\n" +
+                //         "Backpack:" + backpack.replace(',', ' '));
+                //
+                // })
 
             }
         })
@@ -1328,7 +1328,7 @@ async function submitCharacter(message) {
 const test = (message) => {
 
     serviceCalls.testClass()
-        .then(results =>{
+        .then(results => {
             message.channel.send(results)
         })
 
@@ -1404,11 +1404,10 @@ client.on("message", async (message) => {
         getCharacters(message)
     } else if (message.content.startsWith("!character")) {
         submitCharacter(message)
-    }else if (message.content.startsWith("!test")) {
+    } else if (message.content.startsWith("!test")) {
         test(message)
     }
 });
-
 
 client.login(config.token);
 

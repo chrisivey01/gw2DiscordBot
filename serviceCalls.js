@@ -1,6 +1,12 @@
 const fetch = require('node-fetch');
+const apiTest = 'http://localhost:3001'
 
 module.exports = {
+    testClass:function(){
+        let url = apiTest + `/test`
+        return fetch(url)
+            .then(results => results.text())
+    },
     apiChecker:function(api) {
         let url = `https://api.guildwars2.com/v2/account?access_token=${api}`
             return fetch(url)
