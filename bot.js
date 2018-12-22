@@ -952,15 +952,19 @@ const getApiUid = (message) => {
 }
 
 const getGearNames =(charInfo) =>{
-    return new Promise( resolve => {
+    return new Promise( (resolve, reject) => {
         if (charInfo.length > 0) {
+            resolve()
             for (let i = 0; i < charInfo.length; i++) {
                  serviceCalls.gearCheck(charInfo[i].id)
                     .then(results => {
                         charInfo[i].name = results[0].name
                     })
             }
-        }
+            return charInfo
+        }else(
+            reject()
+        )
     })
 }
 
@@ -977,6 +981,7 @@ const getGearsWithoutStats = (characterGearNowWithStats, characterEquipWithoutSt
                 equipment.name = eq.name
                 characterGearNowWithStats.push(equipment)
             })
+            return characterGearNowWithStats
         })
         .catch(error => {
             console.log(error)
@@ -1023,6 +1028,8 @@ async function submitCharacter(message) {
     let allGear;
     let gw2Char = text.replace(`!character `, ``)
 
+    let promiseTest;
+
     let sql = 'SELECT api_key FROM apidiscorduid WHERE uid = ?'
     let myApi = await pool.query(sql, [discordUid])
     serviceCalls.characterSubmit(myApi[0].api_key, gw2Char)
@@ -1039,9 +1046,7 @@ async function submitCharacter(message) {
                                 equipment.stats = eq.stats
                                 charactersEquipment.push(equipment)
                             }
-                        }
-                    } else {
-                        if (eq.slot !== "HelmAquatic" && eq.slot !== "Sickle" &&  eq.slot !== "Foraging" && eq.slot !== "Pick" && "WeaponAquaticA") {
+                        } else {
                             equipmentWithoutStats.id = eq.id
                             equipmentWithoutStats.slot = eq.slot
                             characterEquipmentWithoutStats.push(equipmentWithoutStats)
@@ -1055,7 +1060,12 @@ async function submitCharacter(message) {
                     characterEquipWithoutStatsIds.push(eq.id)
                 })
 
-                allGear = Promise.all([getGearNames(charactersEquipment), getGearsWithoutStats(characterGearNowWithStats, characterEquipWithoutStatsIds.toString())])
+                getGearNames(charactersEquipment)
+                    .then(data => {
+                        promiseTest = data;
+                    })
+                console.log(`Promise test: ${promiseTest}`)
+                Promise.all([getGearNames(charactersEquipment), getGearsWithoutStats(characterGearNowWithStats, characterEquipWithoutStatsIds.toString())])
                     .then(() => {
                         allGear = [...charactersEquipment, ...characterGearNowWithStats]
                         allGear.uid = discordUid
