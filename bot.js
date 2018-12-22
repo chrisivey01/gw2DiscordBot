@@ -14,7 +14,7 @@ var linkCount = 0;
 var spyCount = 0;
 
 var yaksBendServerID = 1003;
-var linkedServerID = 1010
+var linkedServerID = 1005 || 1021 || 1020
 
 // Channels
 const chanKillCountsId = "521400998443352105";
@@ -32,7 +32,7 @@ var twelveIncre = 0;
 
 //new bot changes dec 2018
 let accountId;
-let myApi = '9F1DA7B3-F32A-024F-B76A-7A496E9A207F7EAF1AF3-DB60-493B-B4E5-5503BA064F6B';
+// let myApi = '9F1DA7B3-F32A-024F-B76A-7A496E9A207F7EAF1AF3-DB60-493B-B4E5-5503BA064F6B';
 
 let holdText;
 
@@ -577,7 +577,7 @@ async function leaderboard(message) {
 
 async function update(message) {
 
-    if (message.member.roles.find("name", "Mod")  || message.member.roles.find("name", "Chris") ||
+    if (message.member.roles.find("name", "Mod") || message.member.roles.find("name", "Chris") ||
         message.member.roles.find("name", "@admin")) {
         let sql = "select * from users"
 
@@ -637,7 +637,7 @@ async function spyBlaster(message) {
 
 async function resetLeaderboard(message) {
 
-    if (message.member.roles.find("name", "Mod")  || message.member.roles.find("name", "Chris") ||
+    if (message.member.roles.find("name", "Mod") || message.member.roles.find("name", "Chris") ||
         message.member.roles.find("name", "@admin")) {
 
 
@@ -919,7 +919,7 @@ const getApiUid = (message) => {
                             if (!buildOnCheck.text) {
                                 let submitAccountInfoSql = `INSERT INTO apiDiscordUid (api_key, uid, gw2_account_name) VALUES ?`
                                 let values = [
-                                    [obtainResults.id, Uid, obtainResults.name]
+                                    [obtainApi, Uid, obtainResults.name]
                                 ]
                                 pool.query(submitAccountInfoSql, [values], (err, result) => {
                                     if (err) throw err;
@@ -951,30 +951,31 @@ const getApiUid = (message) => {
         })
 }
 
-getGearNames = (charInfo) =>{
-    return new Promise(resolve => {
-        for (let i = 0; i < charInfo.length; i++) {
-            serviceCalls.gearCheck(charInfo[i].id)
-                .then(results => {
-                    charInfo[i].name = results[0].name
-                })
-
-            if(i === charInfo.length - 1)
-                resolve()
+const getGearNames =(charInfo) =>{
+    return new Promise( resolve => {
+        if (charInfo.length > 0) {
+            for (let i = 0; i < charInfo.length; i++) {
+                 serviceCalls.gearCheck(charInfo[i].id)
+                    .then(results => {
+                        charInfo[i].name = results[0].name
+                    })
+            }
         }
     })
 }
 
-getGearsWithoutStats = (characterEquipmentWithoutStats, characterEquipWithoutStatsIds) =>{
+const getGearsWithoutStats = (characterGearNowWithStats, characterEquipWithoutStatsIds) => {
     return serviceCalls.gearCheck(characterEquipWithoutStatsIds.toString())
-        .then(results =>{
+        .then(results => {
             results.forEach(eq => {
                 let equipment = {}
                 equipment.id = eq.id
                 equipment.slot = eq.details.type
-                equipment.stats = eq.details.infix_upgrade.attributes
+                if(eq.details.hasOwnProperty("infix_upgrade")) {
+                    equipment.stats = eq.details.infix_upgrade.attributes
+                }
                 equipment.name = eq.name
-                characterEquipmentWithoutStats.push(equipment)
+                characterGearNowWithStats.push(equipment)
             })
         })
         .catch(error => {
@@ -982,33 +983,65 @@ getGearsWithoutStats = (characterEquipmentWithoutStats, characterEquipWithoutSta
         })
 }
 
-const submitCharacter = (message) => {
+const equipFilter = (equip) => {
+    let name;
+    let stats;
+    let id;
+    let equipArray = [];
+
+    if (equip.length > 0) {
+        if (equip[0].hasOwnProperty("name")) {
+            equipArray.push(equip[0].name)
+            if (equip[0].stats.length) {
+                for (let i = 0; i < equip[0].stats.length; i++) {
+                    let modifier = equip[0].stats[i].modifier
+                    let attribute = equip[0].stats[i].attribute
+
+                    equipArray.push(`${attribute} ${modifier}`)
+                }
+            } else {
+                let statKeys = Object.keys(equip[0].stats.attributes)
+                let statValues = Object.values(equip[0].stats.attributes)
+
+                for (let i = 0; i < statKeys.length; i++) {
+                    equipArray.push(`${statKeys[i]} ${statValues[i]}  `)
+                }
+            }
+        }
+    }
+
+    return equipArray.toString()
+}
+
+async function submitCharacter(message) {
     //get UID
-    let uid = message.author.id;
+    let discordUid = message.author.id;
     let text = message.content;
     let charactersEquipment = []
     let characterEquipmentWithoutStats = []
+    let characterGearNowWithStats = []
     let allGear;
-
-
     let gw2Char = text.replace(`!character `, ``)
 
-    // https://api.guildwars2.com/v1/item_details.json?item_id=70794
-    serviceCalls.characterSubmit(myApi, gw2Char)
+    let sql = 'SELECT api_key FROM apidiscorduid WHERE uid = ?'
+    let myApi = await pool.query(sql, [discordUid])
+    serviceCalls.characterSubmit(myApi[0].api_key, gw2Char)
         .then(results => {
             if (results.equipment) {
                 results.equipment.forEach(eq => {
                     let equipment = {}
                     let equipmentWithoutStats = {}
-                    if (eq.hasOwnProperty('stats')) {
-                        if (eq.stats.hasOwnProperty('attributes')) {
-                            equipment.id = eq.id
-                            equipment.slot = eq.slot
-                            equipment.stats = eq.stats
-                            charactersEquipment.push(equipment)
+                    if (eq.slot !== "HelmAquatic" && eq.slot !== "Sickle" &&  eq.slot !== "Foraging" && eq.slot !== "Pick" && "WeaponAquaticA") {
+                        if (eq.hasOwnProperty('stats')) {
+                            if (eq.stats.hasOwnProperty('attributes')) {
+                                equipment.id = eq.id
+                                equipment.slot = eq.slot
+                                equipment.stats = eq.stats
+                                charactersEquipment.push(equipment)
+                            }
                         }
                     } else {
-                        if (eq.slot !== "HelmAquatic" && eq.slot !== "Sickle" && eq.slot !== "Axe" && eq.slot !== "Pick" && "WeaponAquaticA") {
+                        if (eq.slot !== "HelmAquatic" && eq.slot !== "Sickle" &&  eq.slot !== "Foraging" && eq.slot !== "Pick" && "WeaponAquaticA") {
                             equipmentWithoutStats.id = eq.id
                             equipmentWithoutStats.slot = eq.slot
                             characterEquipmentWithoutStats.push(equipmentWithoutStats)
@@ -1021,21 +1054,144 @@ const submitCharacter = (message) => {
                 characterEquipmentWithoutStats.forEach(eq => {
                     characterEquipWithoutStatsIds.push(eq.id)
                 })
-                let characterEquipmentWoStats = []
 
-                allGear = Promise.all([getGearNames(charactersEquipment), getGearsWithoutStats(characterEquipmentWoStats, characterEquipWithoutStatsIds.toString())])
+                allGear = Promise.all([getGearNames(charactersEquipment), getGearsWithoutStats(characterGearNowWithStats, characterEquipWithoutStatsIds.toString())])
                     .then(() => {
-                      allGear = [...charactersEquipment,...characterEquipmentWoStats]
+                        allGear = [...charactersEquipment, ...characterGearNowWithStats]
+                        allGear.uid = discordUid
+                        allGear.character_name = gw2Char
                         console.log(allGear)
 
-                    })
-                    .catch(err => {
-                        console.log(err)
-                    })
 
+                        //params
+                        let uid = allGear.uid
+                        let char_name = allGear.character_name
+                        let helmet = equipFilter(allGear.filter(equip => {
+                            if (equip.slot === "Helm") {
+                                return equip
+                            }
+                        }))
+                        let chest = equipFilter(allGear.filter(equip => {
+                            if (equip.slot === "Coat") {
+                                return equip
+                            }
+                        }))
+                        let shoulders = equipFilter(allGear.filter(equip => {
+                            if (equip.slot === "Shoulders") {
+                                return equip
+                            }
+                        }))
+                        let leggings = equipFilter(allGear.filter(equip => {
+                            if (equip.slot === "Leggings") {
+                                return equip
+                            }
+                        }))
+                        let boots = equipFilter(allGear.filter(equip => {
+                            if (equip.slot === "Boots") {
+                                return equip
+                            }
+                        }))
+                        let gloves = equipFilter(allGear.filter(equip => {
+                            if (equip.slot === "Gloves") {
+                                return equip
+                            }
+                        }))
+                        let ring1 = equipFilter(allGear.filter(equip => {
+                            if (equip.slot === "Ring1" || equip.slot === "Ring") {
+                                return equip
+                            }
+                        }))
+                        let ring2 = equipFilter(allGear.filter(equip => {
+                            if (equip.slot === "Ring2" || equip.slot === "Ring") {
+                                return equip
+                            }
+                        }))
+                        let accessory1 = equipFilter(allGear.filter(equip => {
+                            if (equip.slot === "Accessory1" || equip.slot === "Accessory") {
+                                return equip
+                            }
+                        }))
+                        let accessory2 = equipFilter(allGear.filter(equip => {
+                            if (equip.slot === "Accessory2" || equip.slot === "Accessory") {
+                                return equip
+                            }
+                        }))
+                        let amulet = equipFilter(allGear.filter(equip => {
+                            if (equip.slot === "Amulet") {
+                                return equip
+                            }
+                        }))
+                        let weapona1 = equipFilter(allGear.filter(equip => {
+                            if (equip.slot === "WeaponA1" || equip.slot === "Axe" || equip.slot === "Shield") {
+                                return equip
+                            }
+                        }))
+                        let weapona2 = equipFilter(allGear.filter(equip => {
+                            if (equip.slot === "WeaponA2" || equip.slot === "Axe" || equip.slot === "Shield") {
+                                return equip
+                            }
+                        }))
+                        let weaponb1 = equipFilter(allGear.filter(equip => {
+                            if (equip.slot === "WeaponB1" || equip.slot === "Axe" || equip.slot === "Shield") {
+                                return equip
+                            }
+                        }))
+                        let weaponb2 = equipFilter(allGear.filter(equip => {
+                            if (equip.slot === "WeaponB2" || equip.slot === "Axe" || equip.slot === "Shield") {
+                                return equip
+                            }
+                        }))
+                        let backpack = equipFilter(allGear.filter(equip => {
+                            if (equip.slot === "Backpack") {
+                                return equip
+                            }
+                        }))
+
+                        message.channel.send("Current Gear for: " + char_name + "\n" +
+                            "Helmet:" + helmet.replace(',', ' ') + "\n" +
+                            "Chest:" + chest.replace(',', ' ') + "\n" +
+                            "Shoulders:" + shoulders.replace(',', ' ') + "\n" +
+                            "Leggings:" + leggings.replace(',', ' ') + "\n" +
+                            "Boots:" + boots.replace(',', ' ') + "\n" +
+                            "Gloves:" + gloves.replace(',', ' ') + "\n" +
+                            "Ring1:" + ring1.replace(',', ' ') + "\n" +
+                            "Ring2:" + ring2.replace(',', ' ') + "\n" +
+                            "Accessory1:" + accessory1.replace(',', ' ') + "\n" +
+                            "Accessory2:" + accessory2.replace(',', ' ') + "\n" +
+                            "Amulet:" + amulet.replace(',', ' ') + "\n" +
+                            "WeaponA1:" + weapona1.replace(',', ' ') + "\n" +
+                            "WeaponA2:" + weapona2.replace(',', ' ') + "\n" +
+                            "WeaponB1:" + weaponb1.replace(',', ' ') + "\n" +
+                            "WeaponB2:" + weaponb2.replace(',', ' ') + "\n" +
+                            "Backpack:" + backpack.replace(',', ' '));
+
+
+                        //     let insertSql = `INSERT INTO uid_character_gear (uid, gw2Char, helmet, chest, shoulders, leggings, boots, gloves, ring1, ring2, accessory1, accessory2, amulet, weaponA1, weaponA2,weaponB1,weaponB2) VALUES ?`
+                        //     let values = {
+                        //         uid:uid,
+                        //         character_name:char_name,
+                        //         helmet:helmet,
+                        //         chest:chest,
+                        //         shoulders:shoulders,
+                        //         leggings:leggings,
+                        //         boots:boots,
+                        //         gloves:gloves,
+                        //         ring1:ring1,
+                        //         ring2:ring2,
+                        //         accessory1:accessory1,
+                        //         accessory2:accessory2,
+                        //         amulet:amulet,
+                        //         weaponA1:weaponA1,
+                        //         weaponA2:weaponA2,
+                        //         weaponB1:weaponB1,
+                        //         weaponB2:weaponB2
+                        //     }
+                        // })
+
+
+                    })
             }
         })
-
     // let sql = 'INSERT INTO char_equip  fields '
 }
 
