@@ -1,22 +1,26 @@
 // Load up the discord.js library
-let serviceCalls = require("./serviceCalls");
-
 const Discord = require("discord.js");
 const fetch = require('node-fetch');
-var cron = require('node-cron');
-
-var pool = require('./database/database');
 
 
+//my project imports
+const serviceCalls = require("./project/services/serviceCalls");
+const pool = require('./project/database/database');
+const utils = require('./project/utils/utils')
+const cron = require('node-cron');
+
+
+
+//my global vars
 var wvwPKills = [];
 var ybCount = 0;
 var linkCount = 0;
 var spyCount = 0;
 
-var yaksBendServerID = 1003;
-var linkedServerID = 1005;
-var linkedServerID1 = 1021;
-var linkedServerID2 = 1020;
+let yaksBendServerID = 1003;
+let linkedServerID = 1005;
+let linkedServerID1 = 1021;
+let linkedServerID2 = 1020;
 
 // Channels
 const chanKillCountsId = "521400998443352105";
@@ -64,11 +68,8 @@ const config = require("./auth.json");
 // config.prefix contains the message prefix.
 
 client.on("ready", () => {
-    // This event will run if the bot starts, and logs in, successfully.
     console.log(`Bot has started, with ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`);
-    // Example of changing the bot's playing game to something useful. `client.user` is what the
-    // docs refer to as the "ClientUser".
-    client.user.setActivity(`Doing stuff`);
+    client.user.setActivity(`Patrol`);
 });
 
 client.on("ready", () => {
@@ -326,10 +327,10 @@ async function keyAdd(message) {
         }
 
 
-    let userToModify = client.guilds.get("476902310581239810").members.get(values.user_id)
-    let verifiedRole = message.guild.roles.find("name", "Verified");
+        let userToModify = client.guilds.get("476902310581239810").members.get(values.user_id)
+        let verifiedRole = message.guild.roles.find("name", "Verified");
 
-    //TODO THIS NEEDS TO CHANGE ALL THE TIME
+        //TODO THIS NEEDS TO CHANGE ALL THE TIME
         if (worldCheck.world === linkedServerID || worldCheck.world === linkedServerID1 || worldCheck.world === linkedServerID2) {
             await userToModify.addRole(verifiedRole.id)
             message.channel.send("You've been verified! Type !commands to see what I can do.")
@@ -797,49 +798,20 @@ async function verifyUnverifyUsers(message) {
                             ybCount++
                             results[i].on_yaks = 1
                             userToModify.addRole(verifiedRole.id)
-                                .then(function (result) {
-                                })
-                                .catch(function (err) {
-                                    console.log(err)
-                                })
+
                         } else if (player.world === linkedServerID || player.world === linkedServerID1 || player.world === linkedServerID2) {
                             linkCount++
                             results[i].on_yaks = 2
                             userToModify.addRole(verifiedRole.id)
-                                .then(function (result) {
-                                })
-                                .catch(function (err) {
-                                    console.log(err)
-                                })
+
                         } else {
                             spyCount++
                             userToModify.addRole(spyRole.id)
-                                .then(function (result) {
-                                })
-                                .catch(function (err) {
-                                    console.log(err)
-                                })
                             userToModify.removeRole(verifiedRole.id)
-                                .then(function (result) {
-                                })
-                                .catch(function (err) {
-                                    console.log(err)
-                                })
                             userToModify.removeRole(commanderRole.id)
-                                .then(function (result) {
-                                })
-                                .catch(function (err) {
-                                    console.log(err)
-                                })
                             userToModify.removeRole(modedRole.id)
-                                .then(function (result) {
-                                })
-                                .catch(function (err) {
-                                    console.log(err)
-                                })
                         }
                     }
-
                 })
             let updateStatus = "UPDATE users SET on_yaks = ? WHERE api_key = ?"
 
@@ -953,96 +925,7 @@ const getApiUid = (message) => {
         })
 }
 
-//I HATE PROMISESSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
-const getGearNames = (charInfo) => {
-    return new Promise((resolve, reject) => {
-        if (charInfo.length > 0) {
-            for (let i = 0; i < charInfo.length; i++) {
-                serviceCalls.gearCheck(charInfo[i].id)
-                    .then(results => {
-                        charInfo[i].name = results[0].name
-                        if (i == charInfo.length - 1) {
-                            resolve();
-                            return charInfo;
-                        }
-                    })
-            }
-        }
-    })
-}
-
-// const getGearNames =(charInfo) =>{
-//     return new Promise( (resolve, reject) => {
-//         if (charInfo.length > 0) {
-//             for (let i = 0; i < charInfo.length; i++) {
-//                  serviceCalls.gearCheck(charInfo[i].id)
-//                     .then(results => {
-//                         charInfo[i].name = results[0].name
-//                     })
-//             }
-//             resolve()
-//         }else(
-//             reject()
-//         )
-//     })
-// }
-
-const getGearsWithoutStats = (characterGearNowWithStats, characterEquipWithoutStatsIds) => {
-    return serviceCalls.gearCheck(characterEquipWithoutStatsIds.toString())
-        .then(results => {
-            results.forEach(eq => {
-                let equipment = {}
-                equipment.id = eq.id
-                equipment.slot = eq.details.type
-                if (eq.details.hasOwnProperty("infix_upgrade")) {
-                    equipment.stats = eq.details.infix_upgrade.attributes
-                }
-                equipment.name = eq.name
-                characterGearNowWithStats.push(equipment)
-            })
-            return characterGearNowWithStats
-        })
-        .catch(error => {
-            console.log(error)
-        })
-}
-
-const equipFilter = (equip) => {
-    let name;
-    let stats;
-    let id;
-    let equipArray = [];
-
-
-    // const equipFilter = (equipments, ...descriptions) => {
-    //     let equip = equipments.map(equipment => {
-    //         return descriptions.forEach(description => equipment.slot.includes(description))
-    //     })
-    if (equip.length > 0) {
-        if (equip[0].hasOwnProperty("name")) {
-            equipArray.push(equip[0].name)
-            if (equip[0].stats.length) {
-                for (let i = 0; i < equip[0].stats.length; i++) {
-                    let modifier = equip[0].stats[i].modifier
-                    let attribute = equip[0].stats[i].attribute
-
-                    equipArray.push(`${attribute} ${modifier}`)
-                }
-            } else {
-                let statKeys = Object.keys(equip[0].stats.attributes)
-                let statValues = Object.values(equip[0].stats.attributes)
-
-                for (let i = 0; i < statKeys.length; i++) {
-                    equipArray.push(`${statKeys[i]} ${statValues[i]}  `)
-                }
-            }
-        }
-    }
-
-    return equipArray.toString()
-}
-
-async function submitCharacter(message) {
+async function gearCharacter(message) {
     //get UID
     let discordUid = message.author.id;
     let text = message.content;
@@ -1050,12 +933,11 @@ async function submitCharacter(message) {
     let characterEquipmentWithoutStats = []
     let characterGearNowWithStats = []
     let allGear;
-    let gw2Char = text.replace(`!character `, ``)
-
-    let promiseTest;
+    let gw2Char = text.replace(`!gear `, ``)
 
     let sql = 'SELECT api_key FROM apidiscorduid WHERE uid = ?'
     let myApi = await pool.query(sql, [discordUid])
+    message.channel.send(`Gimme one second... loading gear.`)
     serviceCalls.characterSubmit(myApi[0].api_key, gw2Char)
         .then(results => {
             if (results.equipment) {
@@ -1085,128 +967,62 @@ async function submitCharacter(message) {
                 })
 
 
-                let promiseArray = [getGearNames(charactersEquipment), getGearsWithoutStats(characterGearNowWithStats, characterEquipWithoutStatsIds.toString())]
+                let promiseArray = [utils.getGearNames(charactersEquipment), utils.getGearsWithoutStats(characterGearNowWithStats, characterEquipWithoutStatsIds.toString())]
                 Promise.all(promiseArray)
                     .then((value) => {
                         console.log(value)
-                        //
-                        // allGear = [...charactersEquipment, ...characterGearNowWithStats]
-                        // allGear.uid = discordUid
-                        // allGear.character_name = gw2Char
-                        // console.log(allGear)
-                        //
-                        // return allGear
+
+                        allGear = [...charactersEquipment, ...characterGearNowWithStats]
+                        allGear.uid = discordUid
+                        allGear.character_name = gw2Char
+                        console.log(allGear)
+
+                        return allGear
 
                     })
 
-                // .then(()=>{
-                //
-                //
-                //     //params
-                //     let uid = allGear.uid
-                //     let char_name = allGear.character_name
-                //
-                //     let helmet = equipFilter(allGear.filter(equip => {
-                //         if (equip.slot === "Helm") {
-                //             return equip
-                //         }
-                //     }))
-                //     let chest = equipFilter(allGear.filter(equip => {
-                //         if (equip.slot === "Coat") {
-                //             return equip
-                //         }
-                //     }))
-                //     let shoulders = equipFilter(allGear.filter(equip => {
-                //         if (equip.slot === "Shoulders") {
-                //             return equip
-                //         }
-                //     }))
-                //     let leggings = equipFilter(allGear.filter(equip => {
-                //         if (equip.slot === "Leggings") {
-                //             return equip
-                //         }
-                //     }))
-                //     let boots = equipFilter(allGear.filter(equip => {
-                //         if (equip.slot === "Boots") {
-                //             return equip
-                //         }
-                //     }))
-                //     let gloves = equipFilter(allGear.filter(equip => {
-                //         if (equip.slot === "Gloves") {
-                //             return equip
-                //         }
-                //     }))
-                //     let ring1 = equipFilter(allGear.filter(equip => {
-                //         if (equip.slot === "Ring1" || equip.slot === "Ring") {
-                //             return equip
-                //         }
-                //     }))
-                //     let ring2 = equipFilter(allGear.filter(equip => {
-                //         if (equip.slot === "Ring2" || equip.slot === "Ring") {
-                //             return equip
-                //         }
-                //     }))
-                //     let accessory1 = equipFilter(allGear.filter(equip => {
-                //         if (equip.slot === "Accessory1" || equip.slot === "Accessory") {
-                //             return equip
-                //         }
-                //     }))
-                //     let accessory2 = equipFilter(allGear.filter(equip => {
-                //         if (equip.slot === "Accessory2" || equip.slot === "Accessory") {
-                //             return equip
-                //         }
-                //     }))
-                //     let amulet = equipFilter(allGear.filter(equip => {
-                //         if (equip.slot === "Amulet") {
-                //             return equip
-                //         }
-                //     }))
-                //     let weapona1 = equipFilter(allGear.filter(equip => {
-                //         if (equip.slot === "WeaponA1" || equip.slot === "Axe" || equip.slot === "Shield") {
-                //             return equip
-                //         }
-                //     }))
-                //     let weapona2 = equipFilter(allGear.filter(equip => {
-                //         if (equip.slot === "WeaponA2" || equip.slot === "Axe" || equip.slot === "Shield") {
-                //             return equip
-                //         }
-                //     }))
-                //     let weaponb1 = equipFilter(allGear.filter(equip => {
-                //         if (equip.slot === "WeaponB1" || equip.slot === "Axe" || equip.slot === "Shield") {
-                //             return equip
-                //         }
-                //     }))
-                //     let weaponb2 = equipFilter(allGear.filter(equip => {
-                //         if (equip.slot === "WeaponB2" || equip.slot === "Axe" || equip.slot === "Shield") {
-                //             return equip
-                //         }
-                //     }))
-                //     let backpack = equipFilter(allGear.filter(equip => {
-                //         if (equip.slot === "Backpack") {
-                //             return equip
-                //         }
-                //     }))
-                //
-                //
-                //     message.channel.send("Current Gear for: " + char_name + "\n" +
-                //         "Helmet:" + helmet.replace(',', ' ') + "\n" +
-                //         "Chest:" + chest.replace(',', ' ') + "\n" +
-                //         "Shoulders:" + shoulders.replace(',', ' ') + "\n" +
-                //         "Leggings:" + leggings.replace(',', ' ') + "\n" +
-                //         "Boots:" + boots.replace(',', ' ') + "\n" +
-                //         "Gloves:" + gloves.replace(',', ' ') + "\n" +
-                //         "Ring1:" + ring1.replace(',', ' ') + "\n" +
-                //         "Ring2:" + ring2.replace(',', ' ') + "\n" +
-                //         "Accessory1:" + accessory1.replace(',', ' ') + "\n" +
-                //         "Accessory2:" + accessory2.replace(',', ' ') + "\n" +
-                //         "Amulet:" + amulet.replace(',', ' ') + "\n" +
-                //         "WeaponA1:" + weapona1.replace(',', ' ') + "\n" +
-                //         "WeaponA2:" + weapona2.replace(',', ' ') + "\n" +
-                //         "WeaponB1:" + weaponb1.replace(',', ' ') + "\n" +
-                //         "WeaponB2:" + weaponb2.replace(',', ' ') + "\n" +
-                //         "Backpack:" + backpack.replace(',', ' '));
-                //
-                // })
+                    .then(() => {
+                        //params
+                        let uid = allGear.uid
+                        let char_name = allGear.character_name
+
+                        let helmet = utils.equipFilter(allGear.filter(equip => { return equip.slot === "Helm"}))
+                        let chest = utils.equipFilter(allGear.filter(equip => { return equip.slot === "Coat"}))
+                        let shoulders = utils.equipFilter(allGear.filter(equip => { return equip.slot === "Shoulders"}))
+                        let leggings = utils.equipFilter(allGear.filter(equip => { return equip.slot === "Leggings"}))
+                        let boots = utils.equipFilter(allGear.filter(equip => { return equip.slot === "Boots"}))
+                        let gloves = utils.equipFilter(allGear.filter(equip => { return equip.slot === "Gloves"}))
+                        let ring1 = utils.equipFilter(allGear.filter(equip => { return equip.slot === "Ring1" || equip.slot === "Ring"}))
+                        let ring2 = utils.equipFilter(allGear.filter(equip => { return equip.slot === "Ring2" || equip.slot === "Ring"}))
+                        let accessory1 = utils.equipFilter(allGear.filter(equip => { return equip.slot === "Accessory1" || equip.slot === "Accessory"}))
+                        let accessory2 = utils.equipFilter(allGear.filter(equip => { return equip.slot === "Accessory2" || equip.slot === "Accessory"}))
+                        let amulet = utils.equipFilter(allGear.filter(equip => { return equip.slot === "Amulet"}))
+                        let weapona1 = utils.equipFilter(allGear.filter(equip => { return equip.slot === "WeaponA1" || equip.slot === "Axe" || equip.slot === "Shield"}))
+                        let weapona2 = utils.equipFilter(allGear.filter(equip => { return equip.slot === "WeaponA2" || equip.slot === "Axe" || equip.slot === "Shield"}))
+                        let weaponb1 = utils.equipFilter(allGear.filter(equip => { return equip.slot === "WeaponB1" || equip.slot === "Axe" || equip.slot === "Shield"}))
+                        let weaponb2 = utils.equipFilter(allGear.filter(equip => { return equip.slot === "WeaponB2" || equip.slot === "Axe" || equip.slot === "Shield"}))
+                        let backpack = utils.equipFilter(allGear.filter(equip => {return equip.slot === "Backpack"}))
+
+
+                        message.channel.send("Current Gear for: " + char_name + "\n" +
+                            "Helmet:" + helmet.replace(',', ' ') + "\n" +
+                            "Chest:" + chest.replace(',', ' ') + "\n" +
+                            "Shoulders:" + shoulders.replace(',', ' ') + "\n" +
+                            "Leggings:" + leggings.replace(',', ' ') + "\n" +
+                            "Boots:" + boots.replace(',', ' ') + "\n" +
+                            "Gloves:" + gloves.replace(',', ' ') + "\n" +
+                            "Ring1:" + ring1.replace(',', ' ') + "\n" +
+                            "Ring2:" + ring2.replace(',', ' ') + "\n" +
+                            "Accessory1:" + accessory1.replace(',', ' ') + "\n" +
+                            "Accessory2:" + accessory2.replace(',', ' ') + "\n" +
+                            "Amulet:" + amulet.replace(',', ' ') + "\n" +
+                            "WeaponA1:" + weapona1.replace(',', ' ') + "\n" +
+                            "WeaponA2:" + weapona2.replace(',', ' ') + "\n" +
+                            "WeaponB1:" + weaponb1.replace(',', ' ') + "\n" +
+                            "WeaponB2:" + weaponb2.replace(',', ' ') + "\n" +
+                            "Backpack:" + backpack.replace(',', ' '));
+
+                    })
 
             }
         })
@@ -1323,14 +1139,7 @@ async function submitCharacter(message) {
 //
 //     }
 // })
-const test = (message) => {
 
-    serviceCalls.testClass()
-        .then(results => {
-            message.channel.send(results)
-        })
-
-}
 
 
 client.on("message", async (message) => {
@@ -1400,10 +1209,8 @@ client.on("message", async (message) => {
         getAccountId(message)
     } else if (message.content.startsWith("!getCharacters")) {
         getCharacters(message)
-    } else if (message.content.startsWith("!character")) {
-        submitCharacter(message)
-    } else if (message.content.startsWith("!test")) {
-        test(message)
+    } else if (message.content.startsWith("!gear")) {
+        gearCharacter(message)
     }
 });
 
