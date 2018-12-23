@@ -5,7 +5,7 @@ const Discord = require("discord.js");
 const fetch = require('node-fetch');
 var cron = require('node-cron');
 
-var pool = require('./database');
+var pool = require('./database/database');
 
 
 var wvwPKills = [];
