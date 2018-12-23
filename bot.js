@@ -326,17 +326,15 @@ async function keyAdd(message) {
         }
 
 
-        let userToModify = client.guilds.get("476902310581239810").members.get(values.user_id)
-        let verifiedRole = message.guild.roles.find("name", "Verified");
+    let userToModify = client.guilds.get("476902310581239810").members.get(values.user_id)
+    let verifiedRole = message.guild.roles.find("name", "Verified");
 
-        //TODO THIS NEEDS TO CHANGE ALL THE TIME
-        for (let i = 0; i < linkedServerID; i++) {
-            if (worldCheck.world === linkedServerID || worldCheck.world === linkedServerID1 || worldCheck.world === linkedServerID2) {
-                await userToModify.addRole(verifiedRole.id)
-                message.channel.send("You've been verified! Type !commands to see what I can do.")
-            } else {
-                message.channel.send("You do not belong to YB or Links")
-            }
+    //TODO THIS NEEDS TO CHANGE ALL THE TIME
+        if (worldCheck.world === linkedServerID || worldCheck.world === linkedServerID1 || worldCheck.world === linkedServerID2) {
+            await userToModify.addRole(verifiedRole.id)
+            message.channel.send("You've been verified! Type !commands to see what I can do.")
+        } else {
+            message.channel.send("You do not belong to YB or Links")
         }
     }
 }
