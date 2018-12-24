@@ -16,10 +16,13 @@ var ybCount = 0;
 var linkCount = 0;
 var spyCount = 0;
 
-let yaksBendServerID = 1003;
-let linkedServerID = 1005;
-let linkedServerID1 = 1021;
-let linkedServerID2 = 1020;
+
+//automate IDs
+let yaksBendServerId = 1003;
+let linkedServerID;
+let linkedServerID1;
+let linkedServerID2;
+
 
 // Channels
 const chanKillCountsId = "521400998443352105";
@@ -322,7 +325,7 @@ async function keyAdd(message) {
         let userToModify = client.guilds.get("476902310581239810").members.get(values.user_id)
         let verifiedRole = message.guild.roles.find("name", "Verified");
         //TODO THIS NEEDS TO CHANGE ALL THE TIME
-        if (worldCheck.world === yaksBendServerID || worldCheck.world === linkedServerID || worldCheck.world === linkedServerID1 || worldCheck.world === linkedServerID2) {
+        if (worldCheck.world === yaksBendServerId || worldCheck.world === linkedServerID || worldCheck.world === linkedServerID1 || worldCheck.world === linkedServerID2) {
             await userToModify.addRole(verifiedRole.id)
             message.channel.send("You've been verified! Type !commands to see what I can do.")
         } else {
@@ -420,6 +423,40 @@ async function resetLeaderboard(message) {
 }
 
 // __________________________ all new
+//reset links
+const testClass = (message) => {
+    message.channel.send(`Link 1: ${linkedServerID} Link 2: ${linkedServerID1} Link 3: ${linkedServerID2} `)
+}
+
+const linkUpdate = (message) => {
+    const url = `https://api.guildwars2.com/v2/wvw/matches/overview?world=${yaksBendServerId}`
+    fetch(url)
+        .then(response => response.json())
+        .then(response => {
+            for (let color in response.all_worlds) {
+                // Check color for existence of yaksBendServerId
+                if (response.all_worlds[color].indexOf(parseInt(yaksBendServerId)) !== -1) {
+                    // Correct color detected; set valid_worlds accordingly
+                    console.log(response.all_worlds[color]);
+                    let links = response.all_worlds[color]
+
+                    links.forEach( link => {
+                        if(linkedServerID === undefined && link !== yaksBendServerId) {
+                            linkedServerID = link;
+                        }else if( linkedServerID1 === undefined && link !== yaksBendServerId){
+                            linkedServerID1 = link
+                        }else if(link !== yaksBendServerId){
+                            linkedServerID2 = link
+                        }
+                    })
+                }
+            }
+        })
+        .then(() => {
+            message.channel.send(`Links updated! Please type !test to verify`)
+        })
+};
+
 
 //score code works fine
 async function score(message) {
@@ -616,6 +653,7 @@ async function verifyUnverifyUsers(message) {
             memberUniqueIdArray.push(member.user.id)
         })
         let verifiedRole = message.guild.roles.find(name => name.name === "Verified");
+        let linkVerifiedRole = message.guild.roles.find(name => name.name === "Link Verified");
         let commanderRole = message.guild.roles.find(name => name.name === "Commander");
         let modedRole = message.guild.roles.find(name => name.name === "Mod");
         let spyRole = message.guild.roles.find(name => name.name === "Thinks They're Sneaky");
@@ -639,7 +677,8 @@ async function verifyUnverifyUsers(message) {
                         } else if (player.world === linkedServerID || player.world === linkedServerID1 || player.world === linkedServerID2) {
                             linkCount++
                             results[i].on_yaks = 2
-                            userToModify.addRole(verifiedRole.id)
+                            userToModify.removeRole(verifiedRole.id)
+                            userToModify.addRole(linkVerifiedRole)
 
                         } else {
                             spyCount++
@@ -1026,18 +1065,10 @@ client.on("message", async (message) => {
     } else if (message.content.startsWith("!serverList")) {
         await serverList(message);
     } else if (message.content.startsWith("!linkUpdate")) {
-        await linkUpdate(message)
+        linkUpdate(message)
+    } else if (message.content.startsWith("!test")){
+        testClass(message)
     }
-
-
-    // }
-    // else if (message.content.startsWith("!verify")) {
-    //     await messageUnverifiedUsers(message)
-
-
-//new stuff
-
-
 });
 
 client.login(config.token);
