@@ -220,7 +220,9 @@ function modCommands(message) {
     message.channel.send("Commands currently: " +
         "\n !verify " +
         "\n !update" +
-        "\n !resetLeaderboard"
+        "\n !resetLeaderboard" +
+        "\n !linkUpdate" +
+        "\n !test"
     );
 }
 
