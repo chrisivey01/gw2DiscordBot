@@ -65,8 +65,12 @@ module.exports = {
             return charInfo
         }
 
-    }
+    },
 
 //END CHARACTER EQUIPMENT
+
+
+
+//
 
 }

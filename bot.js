@@ -10,7 +10,6 @@ const utils = require('./project/utils/utils')
 const cron = require('node-cron');
 
 
-
 //my global vars
 var wvwPKills = [];
 var ybCount = 0;
@@ -108,16 +107,6 @@ const fetchUsers = async (api) => {
     }
 }
 
-const overView = async () => {
-    var url = 'https://api.guildwars2.com/v2/worlds?ids=all'
-    try {
-        let response = await fetch(url)
-        worldCheck = await response.json()
-        return worldCheck
-    } catch (e) {
-        return e.message
-    }
-}
 
 const wvwKills = async (api) => {
     var url = 'https://api.guildwars2.com/v2/account/achievements?access_token=' + api + '&id=283'
@@ -161,19 +150,54 @@ const getNames = async (serverId) => {
 }
 
 async function serverList(message) {
-    await overView()
-
-    for (let i = 0; i < worldCheck.length; i++) {
-        let serverId = worldCheck[i].id
-        let serverName = worldCheck[i].name
-        let serverPop = worldCheck[i].population
-
-        if (parseInt(worldCheck[i].id) >= 1001 && parseInt(worldCheck[i].id) <= 1024) {
-            message.channel.send('Server Id: ' + serverId + '\n Server Name: '
-                + serverName + '\n Server Population: ' + serverPop)
-        }
-    }
+    let worldArray = []
+    let worldObj = {};
+    let worlds;
+    serviceCalls.overView()
+        .then(results => {
+            worlds = results
+            for (let i = 0; i < worlds.length; i++) {
+                worldObj = {}
+                worldObj.serverId = worlds[i].id
+                worldObj.serverName = worlds[i].name
+                worldObj.serverPop = worlds[i].population
+                worldArray.push(worldObj)
+            }
+        })
+        .then(() => {
+            message.channel.send({
+                    embed: {
+                        description:
+                            '** Server Name: **' + worldArray[0].serverName + ' **Server Pop:** ' + worldArray[0].serverPop + ' **Id:** ' + worldArray[0].serverId + '\n' +
+                            '**Server Name:** ' + worldArray[1].serverName + ' **Server Pop:** ' + worldArray[1].serverPop + ' **Id:** ' + worldArray[1].serverId + '\n' +
+                            '**Server Name:** ' + worldArray[2].serverName + ' **Server Pop:** ' + worldArray[2].serverPop + ' **Id:** ' + worldArray[2].serverId + '\n' +
+                            '**Server Name:** ' + worldArray[3].serverName + ' **Server Pop:** ' + worldArray[3].serverPop + ' **Id:** ' + worldArray[3].serverId + '\n' +
+                            '**Server Name:** ' + worldArray[4].serverName + ' **Server Pop:** ' + worldArray[4].serverPop + ' **Id:** ' + worldArray[4].serverId + '\n' +
+                            '**Server Name:** ' + worldArray[5].serverName + ' **Server Pop:** ' + worldArray[5].serverPop + ' **Id:** ' + worldArray[5].serverId + '\n' +
+                            '**Server Name:** ' + worldArray[6].serverName + ' **Server Pop:** ' + worldArray[6].serverPop + ' **Id:** ' + worldArray[6].serverId + '\n' +
+                            '**Server Name:** ' + worldArray[7].serverName + ' **Server Pop:** ' + worldArray[7].serverPop + ' **Id:** ' + worldArray[7].serverId + '\n' +
+                            '**Server Name:** ' + worldArray[8].serverName + ' **Server Pop:** ' + worldArray[8].serverPop + ' **Id:** ' + worldArray[8].serverId + '\n' +
+                            '**Server Name:** ' + worldArray[9].serverName + ' **Server Pop:** ' + worldArray[9].serverPop + ' **Id:** ' + worldArray[9].serverId + '\n' +
+                            '**Server Name:** ' + worldArray[10].serverName + ' **Server Pop:** ' + worldArray[10].serverPop + ' **Id:** ' + worldArray[10].serverId + '\n' +
+                            '**Server Name:** ' + worldArray[11].serverName + ' **Server Pop:** ' + worldArray[11].serverPop + ' **Id:** ' + worldArray[11].serverId + '\n' +
+                            '**Server Name:** ' + worldArray[12].serverName + ' **Server Pop:** ' + worldArray[12].serverPop + ' **Id:** ' + worldArray[12].serverId + '\n' +
+                            '**Server Name:** ' + worldArray[13].serverName + ' **Server Pop:** ' + worldArray[13].serverPop + ' **Id:** ' + worldArray[13].serverId + '\n' +
+                            '**Server Name:** ' + worldArray[14].serverName + ' **Server Pop:** ' + worldArray[14].serverPop + ' **Id:** ' + worldArray[14].serverId + '\n' +
+                            '**Server Name:** ' + worldArray[15].serverName + ' **Server Pop:** ' + worldArray[15].serverPop + ' **Id:** ' + worldArray[15].serverId + '\n' +
+                            '**Server Name:** ' + worldArray[16].serverName + ' **Server Pop:** ' + worldArray[16].serverPop + ' **Id:** ' + worldArray[16].serverId + '\n' +
+                            '**Server Name:** ' + worldArray[17].serverName + ' **Server Pop:** ' + worldArray[17].serverPop + ' **Id:** ' + worldArray[17].serverId + '\n' +
+                            '**Server Name:** ' + worldArray[18].serverName + ' **Server Pop:** ' + worldArray[18].serverPop + ' **Id:** ' + worldArray[18].serverId + '\n' +
+                            '**Server Name:** ' + worldArray[19].serverName + ' **Server Pop:** ' + worldArray[19].serverPop + ' **Id:** ' + worldArray[19].serverId + '\n' +
+                            '**Server Name:** ' + worldArray[20].serverName + ' **Server Pop:** ' + worldArray[20].serverPop + ' **Id:** ' + worldArray[20].serverId + '\n' +
+                            '**Server Name:** ' + worldArray[21].serverName + ' **Server Pop:** ' + worldArray[21].serverPop + ' **Id:** ' + worldArray[21].serverId + '\n' +
+                            '**Server Name:** ' + worldArray[22].serverName + ' **Server Pop:** ' + worldArray[22].serverPop + ' **Id:** ' + worldArray[22].serverId + '\n' +
+                            '**Server Name:** ' + worldArray[23].serverName + ' **Server Pop:** ' + worldArray[23].serverPop + ' **Id:** ' + worldArray[23].serverId
+                    }
+                }
+            )
+        })
 }
+
 
 function commands(message) {
     message.channel.send("Commands currently: " +
@@ -184,7 +208,8 @@ function commands(message) {
         "\n !kills " +
         "\n !leaderboard " +
         "\n !submit " +
-        "\n !gear "
+        "\n !gear " +
+        "\n !serverList"
     );
 }
 
@@ -192,8 +217,7 @@ function modCommands(message) {
     message.channel.send("Commands currently: " +
         "\n !verify " +
         "\n !update" +
-        "\n !resetLeaderboard" +
-        "\n !serverList"
+        "\n !resetLeaderboard"
     );
 }
 
@@ -485,6 +509,7 @@ async function score(message) {
         }
     );
 }
+
 //kill code, complex
 async function kills(message) {
     var _output = "";
@@ -642,6 +667,7 @@ async function verifyUnverifyUsers(message) {
         spyCount = 0;
     }
 }
+
 //submit API for multiple checks to see if valid or not.
 const getApiUid = (message) => {
     let Uid = message.author.id;
@@ -760,22 +786,54 @@ async function gearCharacter(message) {
                         let uid = allGear.uid
                         let char_name = allGear.character_name
 
-                        let helmet = utils.equipFilter(allGear.filter(equip => { return equip.slot === "Helm"}))
-                        let chest = utils.equipFilter(allGear.filter(equip => { return equip.slot === "Coat"}))
-                        let shoulders = utils.equipFilter(allGear.filter(equip => { return equip.slot === "Shoulders"}))
-                        let leggings = utils.equipFilter(allGear.filter(equip => { return equip.slot === "Leggings"}))
-                        let boots = utils.equipFilter(allGear.filter(equip => { return equip.slot === "Boots"}))
-                        let gloves = utils.equipFilter(allGear.filter(equip => { return equip.slot === "Gloves"}))
-                        let ring1 = utils.equipFilter(allGear.filter(equip => { return equip.slot === "Ring1" || equip.slot === "Ring"}))
-                        let ring2 = utils.equipFilter(allGear.filter(equip => { return equip.slot === "Ring2" || equip.slot === "Ring"}))
-                        let accessory1 = utils.equipFilter(allGear.filter(equip => { return equip.slot === "Accessory1" || equip.slot === "Accessory"}))
-                        let accessory2 = utils.equipFilter(allGear.filter(equip => { return equip.slot === "Accessory2" || equip.slot === "Accessory"}))
-                        let amulet = utils.equipFilter(allGear.filter(equip => { return equip.slot === "Amulet"}))
-                        let weapona1 = utils.equipFilter(allGear.filter(equip => { return equip.slot === "WeaponA1" || equip.slot === "Axe" || equip.slot === "Shield"}))
-                        let weapona2 = utils.equipFilter(allGear.filter(equip => { return equip.slot === "WeaponA2" || equip.slot === "Axe" || equip.slot === "Shield"}))
-                        let weaponb1 = utils.equipFilter(allGear.filter(equip => { return equip.slot === "WeaponB1" || equip.slot === "Axe" || equip.slot === "Shield"}))
-                        let weaponb2 = utils.equipFilter(allGear.filter(equip => { return equip.slot === "WeaponB2" || equip.slot === "Axe" || equip.slot === "Shield"}))
-                        let backpack = utils.equipFilter(allGear.filter(equip => {return equip.slot === "Backpack"}))
+                        let helmet = utils.equipFilter(allGear.filter(equip => {
+                            return equip.slot === "Helm"
+                        }))
+                        let chest = utils.equipFilter(allGear.filter(equip => {
+                            return equip.slot === "Coat"
+                        }))
+                        let shoulders = utils.equipFilter(allGear.filter(equip => {
+                            return equip.slot === "Shoulders"
+                        }))
+                        let leggings = utils.equipFilter(allGear.filter(equip => {
+                            return equip.slot === "Leggings"
+                        }))
+                        let boots = utils.equipFilter(allGear.filter(equip => {
+                            return equip.slot === "Boots"
+                        }))
+                        let gloves = utils.equipFilter(allGear.filter(equip => {
+                            return equip.slot === "Gloves"
+                        }))
+                        let ring1 = utils.equipFilter(allGear.filter(equip => {
+                            return equip.slot === "Ring1" || equip.slot === "Ring"
+                        }))
+                        let ring2 = utils.equipFilter(allGear.filter(equip => {
+                            return equip.slot === "Ring2" || equip.slot === "Ring"
+                        }))
+                        let accessory1 = utils.equipFilter(allGear.filter(equip => {
+                            return equip.slot === "Accessory1" || equip.slot === "Accessory"
+                        }))
+                        let accessory2 = utils.equipFilter(allGear.filter(equip => {
+                            return equip.slot === "Accessory2" || equip.slot === "Accessory"
+                        }))
+                        let amulet = utils.equipFilter(allGear.filter(equip => {
+                            return equip.slot === "Amulet"
+                        }))
+                        let weapona1 = utils.equipFilter(allGear.filter(equip => {
+                            return equip.slot === "WeaponA1" || equip.slot === "Axe" || equip.slot === "Shield"
+                        }))
+                        let weapona2 = utils.equipFilter(allGear.filter(equip => {
+                            return equip.slot === "WeaponA2" || equip.slot === "Axe" || equip.slot === "Shield"
+                        }))
+                        let weaponb1 = utils.equipFilter(allGear.filter(equip => {
+                            return equip.slot === "WeaponB1" || equip.slot === "Axe" || equip.slot === "Shield"
+                        }))
+                        let weaponb2 = utils.equipFilter(allGear.filter(equip => {
+                            return equip.slot === "WeaponB2" || equip.slot === "Axe" || equip.slot === "Shield"
+                        }))
+                        let backpack = utils.equipFilter(allGear.filter(equip => {
+                            return equip.slot === "Backpack"
+                        }))
 
 
                         message.channel.send("Current Gear for: " + char_name + "\n" +
@@ -915,7 +973,6 @@ async function gearCharacter(message) {
 // })
 
 
-
 client.on("message", async (message) => {
     if (message.author.bot) return;
 
@@ -968,22 +1025,17 @@ client.on("message", async (message) => {
         await update(message);
     } else if (message.content.startsWith("!serverList")) {
         await serverList(message);
-    } else if (message.content.startsWith("!linkUpdate")){
+    } else if (message.content.startsWith("!linkUpdate")) {
         await linkUpdate(message)
     }
 
 
-
-
-
-        // }
-        // else if (message.content.startsWith("!verify")) {
-        //     await messageUnverifiedUsers(message)
+    // }
+    // else if (message.content.startsWith("!verify")) {
+    //     await messageUnverifiedUsers(message)
 
 
 //new stuff
-
-
 
 
 });
