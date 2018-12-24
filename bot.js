@@ -84,20 +84,6 @@ function abbreviateWords(_text) {
     return _text.replace("'", "").match(/\b(\w)/g).join('');
 }
 
-function padStart(targetLength, padString) {
-    targetLength = targetLength >> 0; //truncate if number, or convert non-number to 0;
-    padString = String(typeof padString !== 'undefined' ? padString : ' ');
-    if (this.length >= targetLength) {
-        return String(this);
-    } else {
-        targetLength = targetLength - this.length;
-        if (targetLength > padString.length) {
-            padString += padString.repeat(targetLength / padString.length); //append to original to ensure we are longer than needed
-        }
-        return padString.slice(0, targetLength) + String(this);
-    }
-}
-
 //api calls
 const fetchAccounts = async (api) => {
     var url = 'https://api.guildwars2.com/v2/account?access_token='
@@ -119,19 +105,6 @@ const fetchUsers = async (api) => {
         return worldCheck
     } catch (e) {
         return false
-    }
-    // worldCheck[i].api_key
-}
-
-
-const fetchBulk = async (api) => {
-    var url = 'https://api.guildwars2.com/v2/account?access_token='
-    try {
-        let response = await fetch(url + api)
-        worldCheck = await response.json()
-        return worldCheck
-    } catch (e) {
-        return e.message
     }
 }
 
@@ -199,7 +172,6 @@ async function serverList(message) {
             message.channel.send('Server Id: ' + serverId + '\n Server Name: '
                 + serverName + '\n Server Population: ' + serverPop)
         }
-
     }
 }
 
@@ -211,16 +183,17 @@ function commands(message) {
         "\n !score " +
         "\n !kills " +
         "\n !leaderboard " +
-        "\n !check ");
+        "\n !submit " +
+        "\n !gear "
+    );
 }
 
 function modCommands(message) {
     message.channel.send("Commands currently: " +
-        "\n !purge " +
+        "\n !verify " +
         "\n !update" +
-        "\n !spyBlaster" +
         "\n !resetLeaderboard" +
-        "\n !messageMates"
+        "\n !serverList"
     );
 }
 
@@ -275,14 +248,12 @@ async function kda(message) {
         green = await getNames(greenId)
     }
 
-
     //old crappy code
     var url = 'https://api.guildwars2.com/v2/wvw/matches/stats?world=1003'
     var info
     var redKda;
     var blueKda;
     var greenKda;
-
 
     fetch(url)
         .then(response => {
@@ -307,10 +278,9 @@ async function keyAdd(message) {
     userId = message.author.id;
     storeAPI = message.content;
     editedAPI = storeAPI.replace('$key add ', '')
-
     let value = await fetchUsers(editedAPI)
-
     let result;
+
     if (value.text !== 'invalid key') {
         var values = {
             user_id: userId,
@@ -325,11 +295,8 @@ async function keyAdd(message) {
             message.author.send("Bad API key, try again!")
             throw new Error(err)
         }
-
-
         let userToModify = client.guilds.get("476902310581239810").members.get(values.user_id)
         let verifiedRole = message.guild.roles.find("name", "Verified");
-
         //TODO THIS NEEDS TO CHANGE ALL THE TIME
         if (worldCheck.world === linkedServerID || worldCheck.world === linkedServerID1 || worldCheck.world === linkedServerID2) {
             await userToModify.addRole(verifiedRole.id)
@@ -340,36 +307,97 @@ async function keyAdd(message) {
     }
 }
 
-async function check(message) {
-    var userId;
-    var info;
-    var roles = message.guild.roles
-    var verifiedRole = roles.find((item) => item.name === "Verified")
-    let userToModify = message.member;
+async function leaderboard(message) {
+    let sql = "select * from users where wvwkills is not null AND (on_yaks=1 OR on_yaks=2) order by wvwkills desc limit 10"
+    let result;
 
+    result = await pool.query(sql)
+    console.log(result)
 
-    userId = message.author.id;
+    //create leaderboard
 
-    var sql = "SELECT * FROM users WHERE `user_id` = ?"
-    var result;
-    try {
-        //gets one result back
-        result = await pool.query(sql, [userId])
-    } catch (err) {
-        throw new Error(err)
+    message.channel.send('Processing your request...')
+
+    let storeUserInfo = result.map(({api_key, wvwkills}) => ({api_key, wvwkills}));
+
+    for (let i = 0; i < storeUserInfo.length; i++) {
+        let holder = await fetchAccounts(storeUserInfo[i].api_key)
+        storeUserInfo[i]["name"] = holder.name
     }
-
-    await fetchUsers(result[0].api_key)
-
-    if (worldCheck.world === 1003) {
-        message.channel.send("Yb Native")
-    } else if (worldCheck.world === linkedServerID || worldCheck.world === linkedServerID1 || worldCheck.world === linkedServerID2) {
-        message.channel.send("Link Native")
-    } else {
-        message.channel.send("Spy")
+    message.channel.send('Current top 10 in WVW Kills!')
+    for (let i = 0; i < storeUserInfo.length; i++) {
+        message.channel.send('Rank ' + (i + 1) + ' Account Name: ' + storeUserInfo[i].name + ' Kill Count: ' + storeUserInfo[i].wvwkills)
     }
 }
 
+async function update(message) {
+
+    if (message.member.roles.find("name", "Mod") || message.member.roles.find("name", "Chris") ||
+        message.member.roles.find("name", "@admin")) {
+        let sql = "select * from users"
+        let result = await pool.query(sql)
+
+        message.channel.send("Beginning update... this may take a few moments")
+        let addingAccountName;
+        for (let i = 0; i < result.length; i++) {
+            addingAccountName = await fetchAccounts(result[i].api_key)
+            let insertSql = "UPDATE users SET account_id = ? WHERE api_key = ?"
+            let addAccount = [
+                account_id = addingAccountName.name,
+                api_key = result[i].api_key
+            ]
+            await pool.query(insertSql, addAccount)
+        }
+
+        //
+        // let removeUsersSql = " DELETE FROM yaksbend.users WHERE account_id IS NULL"
+        // let resultRemove = await pool.query(removeUsersSql);
+        // message.channel.send("Removed: " + resultRemove.length + " users" )
+        // if (message)
+        message.channel.send("Update completed!")
+
+    } else {
+        message.channel.send('You do not have access to this!')
+    }
+}
+
+
+async function resetLeaderboard(message) {
+    if (message.member.roles.find("name", "Mod") || message.member.roles.find("name", "Chris") ||
+        message.member.roles.find("name", "@admin")) {
+//// new code to update everyones wvwkills to current on leaderboard
+        message.channel.send('Updating everyones kill count...')
+        let queryKillCounts = "SELECT * FROM yaksbend.users WHERE wvwkills IS NOT NULL"
+        let playersWithKills = await pool.query(queryKillCounts)
+
+        for (let i = 0; i < playersWithKills.length; i++) {
+            await wvwKills(playersWithKills[i].api_key);
+            playersWithKills.wvwkills = wvwPKills.current
+
+
+            let updateKills = "UPDATE users SET wvwkills = ? WHERE user_id = ?"
+            let killLoad = [
+                wvwkills = wvwPKills.current,
+                user_id = playersWithKills[i].user_id
+            ];
+
+            await pool.query(updateKills, killLoad);
+
+        }
+///end new code
+        message.channel.send('Clearing Weekly contenders....')
+        let clearWeeklyTournySQL = "UPDATE users SET prev_count = NULL, current_count = NULL, weekly_kill_total = NULL"
+        await pool.query(clearWeeklyTournySQL)
+        message.channel.send('Done')
+
+    } else {
+        message.channel.send('You do not have access to this!')
+    }
+}
+
+// __________________________ all new
+
+//score code works fine
 async function score(message) {
     let wvwScores = await wvwScore()
 
@@ -457,7 +485,7 @@ async function score(message) {
         }
     );
 }
-
+//kill code, complex
 async function kills(message) {
     var _output = "";
     // Thwart user attempt to run the command outside kill count channel
@@ -552,223 +580,7 @@ async function kills(message) {
     message.reply(_output);
 }
 
-async function leaderboard(message) {
-    let sql = "select * from users where wvwkills is not null AND (on_yaks=1 OR on_yaks=2) order by wvwkills desc limit 10"
-    let result;
-
-    result = await pool.query(sql)
-    console.log(result)
-
-    //create leaderboard
-
-    message.channel.send('Processing your request...')
-
-    let storeUserInfo = result.map(({api_key, wvwkills}) => ({api_key, wvwkills}));
-
-    for (let i = 0; i < storeUserInfo.length; i++) {
-        let holder = await fetchAccounts(storeUserInfo[i].api_key)
-
-        storeUserInfo[i]["name"] = holder.name
-    }
-
-
-    message.channel.send('Current top 10 in WVW Kills!')
-    for (let i = 0; i < storeUserInfo.length; i++) {
-        message.channel.send('Rank ' + (i + 1) + ' Account Name: ' + storeUserInfo[i].name + ' Kill Count: ' + storeUserInfo[i].wvwkills)
-    }
-}
-
-async function update(message) {
-
-    if (message.member.roles.find("name", "Mod") || message.member.roles.find("name", "Chris") ||
-        message.member.roles.find("name", "@admin")) {
-        let sql = "select * from users"
-
-
-        let result = await pool.query(sql)
-
-
-        message.channel.send("Beginning update... this may take a few moments")
-        let addingAccountName;
-        for (let i = 0; i < result.length; i++) {
-            addingAccountName = await fetchAccounts(result[i].api_key)
-            let insertSql = "UPDATE users SET account_id = ? WHERE api_key = ?"
-            let addAccount = [
-                account_id = addingAccountName.name,
-                api_key = result[i].api_key
-            ]
-            await pool.query(insertSql, addAccount)
-        }
-
-        //
-        // let removeUsersSql = " DELETE FROM yaksbend.users WHERE account_id IS NULL"
-        // let resultRemove = await pool.query(removeUsersSql);
-        // message.channel.send("Removed: " + resultRemove.length + " users" )
-        // if (message)
-        message.channel.send("Update completed!")
-
-    } else {
-        message.channel.send('You do not have access to this!')
-    }
-}
-
-async function spyBlaster(message) {
-
-
-    if (message.member.roles.find("name", "Mod") || message.member.roles.find("name", "Chris") ||
-        message.member.roles.find("name", "@admin")) {
-
-
-        let sql = "SELECT account_id FROM users WHERE on_yaks = 0"
-
-        let result;
-
-        result = await pool.query(sql)
-
-        message.channel.send("Spy blast happening, lets see what we got!")
-
-        let accountNameList = [];
-        for (let i = 0; i < result.length; i++) {
-            accountNameList.push(result[i].account_id)
-        }
-        message.channel.send('Tag and bagged!' + '\n' + accountNameList)
-    } else {
-        message.channel.send('You do not have access to this!')
-    }
-}
-
-
-async function resetLeaderboard(message) {
-
-    if (message.member.roles.find("name", "Mod") || message.member.roles.find("name", "Chris") ||
-        message.member.roles.find("name", "@admin")) {
-
-
-//// new code to update everyones wvwkills to current on leaderboard
-        message.channel.send('Updating everyones kill count...')
-        let queryKillCounts = "SELECT * FROM yaksbend.users WHERE wvwkills IS NOT NULL"
-        let playersWithKills = await pool.query(queryKillCounts)
-
-        for (let i = 0; i < playersWithKills.length; i++) {
-            await wvwKills(playersWithKills[i].api_key);
-            playersWithKills.wvwkills = wvwPKills.current
-
-
-            let updateKills = "UPDATE users SET wvwkills = ? WHERE user_id = ?"
-            let killLoad = [
-                wvwkills = wvwPKills.current,
-                user_id = playersWithKills[i].user_id
-            ];
-
-            await pool.query(updateKills, killLoad);
-
-        }
-///end new code
-
-
-        message.channel.send('Clearing Weekly contenders....')
-        let clearWeeklyTournySQL = "UPDATE users SET prev_count = NULL, current_count = NULL, weekly_kill_total = NULL"
-        await pool.query(clearWeeklyTournySQL)
-        message.channel.send('Done')
-
-    } else {
-        message.channel.send('You do not have access to this!')
-    }
-
-
-}
-
-async function messageServerMates(message) {
-    if (message.member.roles.find("name", "@mod") || message.member.roles.find("name", "Chris") ||
-        message.member.roles.find("name", "@admin")) {
-
-        let sql = "SELECT user_id, api_key FROM users WHERE on_yaks=?"
-        let result;
-        let linkNumber = 3
-        result = await pool.query(sql, [linkNumber])
-
-        message.channel.send('Give me a moment... messaging server mates')
-        for (let i = 0; i < result.length; i++) {
-            await fetchBulk(result[i].api_key)
-            if (worldCheck.world === linkedServerID) {
-                let userId = result[i].user_id
-                // let mate = message.guild.members.find('id',userId)
-                let mate = message.guild.members.find(id => id.id === userId)
-                try {
-                    mate.send('Like what we do on YB? Msg DK or Chris for help on xfering! It was a pleasure playing with you.')
-                } catch (err) {
-                    console.log(err)
-                }
-            }
-        }
-        message.channel.send('Done!')
-    } else {
-        message.channel.send('You do not have access to this!')
-    }
-}
-
-
-async function messageUnverifiedUsers(message) {
-    //get roles
-    let verifiedRole = message.guild.roles.find(name => name.name === "Verified");
-    let spyRole = message.guild.roles.find(name => name.name === "Thinks They're Sneaky")
-    let commanderRole = message.guild.roles.find(name => name.name === "Commander");
-    let modedRole = message.guild.roles.find(name => name.name === "@mod");
-
-    //get all verified users on discord
-    let myScrewUp = message.guild.members.filter(member => {
-        return member.roles.find(name => name.name === "Verified")
-    })
-
-    //get all users from db
-    let selectUsersSql = 'SELECT * FROM users';
-    let result;
-    message.channel.send('Starting...')
-
-    result = await pool.query(selectUsersSql)
-
-
-    myScrewUp.forEach(function (member) {
-        let discordUserId = member.user.id;
-        let discordUser = member.user
-
-        let userToModify = client.guilds.get("476902310581239810").members.get(discordUserId)
-
-        try {
-            if (result.find(function (u) {
-                return u.user_id === discordUserId
-            })) {
-                userToModify.addRole(verifiedRole)
-                    .catch(function (err) {
-                    })
-                userToModify.removeRole(spyRole)
-                    .catch(function (err) {
-                    })
-            } else {
-                userToModify.removeRole(verifiedRole)
-                    .then(function (result) {
-                    })
-                    .catch(function (err) {
-                    })
-                userToModify.removeRole(commanderRole)
-                    .then(function (result) {
-                    })
-                    .catch(function (err) {
-                    })
-                userToModify.removeRole(modedRole)
-                    .then(function (result) {
-                    })
-                    .catch(function (err) {
-                    })
-            }
-        } catch (e) {
-            console.log(e)
-        }
-    })
-    message.channel.send('Done!')
-}
-
-
+//purge code
 async function verifyUnverifyUsers(message) {
     if (message.member.roles.find("name", "Mod") || message.member.roles.find("name", "@admin")) {
 //get all server users
@@ -830,44 +642,6 @@ async function verifyUnverifyUsers(message) {
         spyCount = 0;
     }
 }
-
-
-// __________________________ all new
-
-
-const getAccountId = (message) => {
-    message.channel.send(`test`)
-
-    let url = `https://api.guildwars2.com/v2/account?access_token=${myApi}`
-
-    let gearUrl = `https://api.guildwars2.com/v2/characters/Chris%20Goes%20Deep/equipment?access_token=9F1DA7B3-F32A-024F-B76A-7A496E9A207F7EAF1AF3-DB60-493B-B4E5-5503BA064F6B`
-    fetch(url)
-        .then(results => results.json())
-        .then(results => {
-            accountId = results.name
-            message.channel.send(`ID: ${accountId}`)
-            fetch(gearUrl)
-                .then(results => results.json())
-                .then(results => {
-                    console.log(results)
-                })
-        })
-}
-
-const getCharacters = (message) => {
-    let charactersUrl = `https://api.guildwars2.com/v2/characters?access_token=${myApi}`
-
-    fetch(charactersUrl)
-        .then(results => results.json())
-        .then(results => {
-            let characterArray;
-            characterArray = results;
-
-            message.channel.send(`Submit one of your characters: ${characterArray.toString()}`)
-        })
-}
-
-
 //submit API for multiple checks to see if valid or not.
 const getApiUid = (message) => {
     let Uid = message.author.id;
@@ -1159,10 +933,10 @@ client.on("message", async (message) => {
         }
     }
 
+
+    /*Base commands*/
     if (message.content.startsWith("!commands")) {
         commands(message);
-    } else if (message.content.startsWith("!modCommands")) {
-        modCommands(message);
     } else if (message.content.startsWith("!users")) {
         users(message);
     } else if (message.content.startsWith("!serverStatus")) {
@@ -1171,28 +945,37 @@ client.on("message", async (message) => {
         await kda(message);
     } else if (message.content.startsWith("$key add")) {
         await keyAdd(message);
-    } else if (message.content.startsWith("!check")) {
-        await check(message);
-    } else if (message.content.startsWith("!purge")) {
-        await purge(message);
-    } else if (message.content.startsWith("!serverList")) {
-        await serverList(message);
     } else if (message.content.startsWith("!score")) {
         await score(message);
     } else if (message.content.startsWith("!kills")) {
         await kills(message);
     } else if (message.content.startsWith("!leaderboard")) {
         await leaderboard(message);
-    } else if (message.content.startsWith("!update")) {
-        await update(message);
-    } else if (message.content.startsWith("!spyBlaster")) {
-        await spyBlaster(message);
-    } else if (message.content.startsWith("!weekly")) {
-        await weekly(message);
+    } else if (message.content.startsWith("!submit")) {
+        getApiUid(message)
+    } else if (message.content.startsWith("!gear")) {
+        await gearCharacter(message)
+    }
+
+    /*Mod commands*/
+    else if (message.content.startsWith("!modCommands")) {
+        modCommands(message);
+    } else if (message.content.startsWith("!verify")) {
+        await verifyUnverifyUsers(message)
     } else if (message.content.startsWith("!resetLeaderboard")) {
         await resetLeaderboard(message);
-    } else if (message.content.startsWith("!messageMates")) {
-        await messageServerMates(message);
+    } else if (message.content.startsWith("!update")) {
+        await update(message);
+    } else if (message.content.startsWith("!serverList")) {
+        await serverList(message);
+    } else if (message.content.startsWith("!linkUpdate")){
+        await linkUpdate(message)
+    }
+
+
+
+
+
         // }
         // else if (message.content.startsWith("!verify")) {
         //     await messageUnverifiedUsers(message)
@@ -1200,18 +983,9 @@ client.on("message", async (message) => {
 
 //new stuff
 
-    } else if (message.content.startsWith("!verify")) {
-        await verifyUnverifyUsers(message)
-    } else if (message.content.startsWith("!submit")) {
-        getApiUid(message)
-    }
-    else if (message.content.startsWith("!getAccountId")) {
-        getAccountId(message)
-    } else if (message.content.startsWith("!getCharacters")) {
-        getCharacters(message)
-    } else if (message.content.startsWith("!gear")) {
-        gearCharacter(message)
-    }
+
+
+
 });
 
 client.login(config.token);
