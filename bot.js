@@ -442,12 +442,12 @@ const linkUpdate = (message) => {
                     console.log(response.all_worlds[color]);
                     let links = response.all_worlds[color]
 
-                    links.forEach( link => {
-                        if(linkedServerID === undefined && link !== yaksBendServerId) {
+                    links.forEach(link => {
+                        if (linkedServerID === undefined && link !== yaksBendServerId) {
                             linkedServerID = link;
-                        }else if( linkedServerID1 === undefined && link !== yaksBendServerId){
+                        } else if (linkedServerID1 === undefined && link !== yaksBendServerId) {
                             linkedServerID1 = link
-                        }else if(link !== yaksBendServerId){
+                        } else if (link !== yaksBendServerId) {
                             linkedServerID2 = link
                         }
                     })
@@ -739,7 +739,7 @@ const getApiUid = (message) => {
                                 pool.query(submitAccountInfoSql, [values], (err, result) => {
                                     if (err) throw err;
                                     console.log("Number of records inserted: " + result.affectedRows);
-                                    message.channel.send(`Added to the DB! Now submit your character using !character [name]`)
+                                    message.channel.send(`Added to the DB! Now submit your character using !gear [name]`)
 
                                 })
                             } else {
@@ -776,7 +776,7 @@ async function gearCharacter(message) {
     let allGear;
     let gw2Char = text.replace(`!gear `, ``)
 
-    let sql = 'SELECT api_key FROM apidiscorduid WHERE uid = ?'
+    let sql = 'SELECT api_key FROM apiDiscordUid WHERE uid = ?'
     let myApi = await pool.query(sql, [discordUid])
     message.channel.send(`Gimme one second... loading gear.`)
     serviceCalls.characterSubmit(myApi[0].api_key, gw2Char)
@@ -895,34 +895,35 @@ async function gearCharacter(message) {
                             "WeaponB2:" + weaponb2.replace(',', ' ') + "\n" +
                             "Backpack:" + backpack.replace(',', ' '));
 
-                    })
+                        let insertSql = `INSERT INTO uid_character_gear SET ?`
 
+                        // let insertSql = `INSERT INTO uid_character_gear (uid, char_name, helmet, chest, shoulders, leggings, boots, gloves, ring1, ring2, accessory1, accessory2, amulet, weaponA1, weaponA2,weaponB1,weaponB2) VALUES ?`
+                        let values = {
+                            uid: uid,
+                            character_name: char_name,
+                            helmet: helmet,
+                            chest: chest,
+                            shoulders: shoulders,
+                            leggings: leggings,
+                            boots: boots,
+                            gloves: gloves,
+                            ring1: ring1,
+                            ring2: ring2,
+                            accessory1: accessory1,
+                            accessory2: accessory2,
+                            amulet: amulet,
+                            weaponA1: weapona1,
+                            weaponA2: weaponb2,
+                            weaponB1: weaponb1,
+                            weaponB2: weaponb2
+                        }
+
+                        pool.query(insertSql,values)
+                    })
             }
         })
-    // let sql = 'INSERT INTO char_equip  fields '
+// let sql = 'INSERT INTO char_equip  fields '
 }
-
-//     let insertSql = `INSERT INTO uid_character_gear (uid, gw2Char, helmet, chest, shoulders, leggings, boots, gloves, ring1, ring2, accessory1, accessory2, amulet, weaponA1, weaponA2,weaponB1,weaponB2) VALUES ?`
-//     let values = {
-//         uid:uid,
-//         character_name:char_name,
-//         helmet:helmet,
-//         chest:chest,
-//         shoulders:shoulders,
-//         leggings:leggings,
-//         boots:boots,
-//         gloves:gloves,
-//         ring1:ring1,
-//         ring2:ring2,
-//         accessory1:accessory1,
-//         accessory2:accessory2,
-//         amulet:amulet,
-//         weaponA1:weaponA1,
-//         weaponA2:weaponA2,
-//         weaponB1:weaponB1,
-//         weaponB2:weaponB2
-//     }
-// })
 
 
 // for(let i = 0; i<results.equipment.length; i++){
@@ -1068,7 +1069,7 @@ client.on("message", async (message) => {
         await serverList(message);
     } else if (message.content.startsWith("!linkUpdate")) {
         linkUpdate(message)
-    } else if (message.content.startsWith("!test")){
+    } else if (message.content.startsWith("!test")) {
         testClass(message)
     }
 });
