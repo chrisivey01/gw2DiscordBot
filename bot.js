@@ -20,8 +20,8 @@ var spyCount = 0;
 //automate IDs
 let yaksBendServerId = 1003;
 let linkedServerID;
-let linkedServerID1;
-let linkedServerID2;
+// let linkedServerID1;
+// let linkedServerID2;
 
 
 // Channels
@@ -327,7 +327,7 @@ async function keyAdd(message) {
         let userToModify = client.guilds.get("476902310581239810").members.get(values.user_id)
         let verifiedRole = message.guild.roles.find("name", "Verified");
         //TODO THIS NEEDS TO CHANGE ALL THE TIME
-        if (worldCheck.world === yaksBendServerId || worldCheck.world === linkedServerID || worldCheck.world === linkedServerID1 || worldCheck.world === linkedServerID2) {
+        if (worldCheck.world === yaksBendServerId || worldCheck.world === linkedServerID) {
             await userToModify.addRole(verifiedRole.id)
             message.channel.send("You've been verified! Type !commands to see what I can do.")
         } else {
@@ -427,7 +427,7 @@ async function resetLeaderboard(message) {
 // __________________________ all new
 //reset links
 const testClass = (message) => {
-    message.channel.send(`Link 1: ${linkedServerID} Link 2: ${linkedServerID1} Link 3: ${linkedServerID2} `)
+    message.channel.send(`Link 1: ${linkedServerID}  `)
 }
 
 const linkUpdate = (message) => {
@@ -445,10 +445,7 @@ const linkUpdate = (message) => {
                     links.forEach(link => {
                         if (linkedServerID === undefined && link !== yaksBendServerId) {
                             linkedServerID = link;
-                        } else if (linkedServerID1 === undefined && link !== yaksBendServerId) {
-                            linkedServerID1 = link
-                        } else if (link !== yaksBendServerId) {
-                            linkedServerID2 = link
+
                         }
                     })
                 }
@@ -676,7 +673,7 @@ async function verifyUnverifyUsers(message) {
                             results[i].on_yaks = 1
                             userToModify.addRole(verifiedRole.id)
 
-                        } else if (player.world === linkedServerID || player.world === linkedServerID1 || player.world === linkedServerID2) {
+                        } else if (player.world === linkedServerID ) {
                             linkCount++
                             results[i].on_yaks = 2
                             userToModify.removeRole(verifiedRole.id)
@@ -879,7 +876,6 @@ async function gearCharacter(message) {
 
                         let insertSql = `INSERT INTO uid_character_gear SET ?`
 
-                        // let insertSql = `INSERT INTO uid_character_gear (uid, char_name, helmet, chest, shoulders, leggings, boots, gloves, ring1, ring2, accessory1, accessory2, amulet, weaponA1, weaponA2,weaponB1,weaponB2) VALUES ?`
                         let values = {
                             uid: uid,
                             character_name: char_name,
