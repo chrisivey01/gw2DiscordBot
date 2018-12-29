@@ -785,7 +785,7 @@ async function gearCharacter(message) {
                 results.equipment.forEach(eq => {
                     let equipment = {}
                     let equipmentWithoutStats = {}
-                    if (eq.slot !== "HelmAquatic" && eq.slot !== "Sickle" && eq.slot !== "Logging" && eq.slot !== "Foraging" && eq.slot !== "Pick" && "WeaponAquaticA") {
+                    if (eq.slot !== "HelmAquatic" && eq.slot !== "Sickle" && eq.slot !== "WeaponAquaticA" && eq.slot !== "Axe" && eq.slot !== "Logging" && eq.slot !== "Foraging" && eq.slot !== "Pick" && "WeaponAquaticA") {
                         if (eq.hasOwnProperty('stats')) {
                             if (eq.stats.hasOwnProperty('attributes')) {
                                 equipment.id = eq.id
@@ -827,73 +827,55 @@ async function gearCharacter(message) {
                         let uid = allGear.uid
                         let char_name = allGear.character_name
 
-                        let helmet = utils.equipFilter(allGear.filter(equip => {
-                            return equip.slot === "Helm"
-                        }))
-                        let chest = utils.equipFilter(allGear.filter(equip => {
-                            return equip.slot === "Coat"
-                        }))
-                        let shoulders = utils.equipFilter(allGear.filter(equip => {
-                            return equip.slot === "Shoulders"
-                        }))
-                        let leggings = utils.equipFilter(allGear.filter(equip => {
-                            return equip.slot === "Leggings"
-                        }))
-                        let boots = utils.equipFilter(allGear.filter(equip => {
-                            return equip.slot === "Boots"
-                        }))
-                        let gloves = utils.equipFilter(allGear.filter(equip => {
-                            return equip.slot === "Gloves"
-                        }))
-                        let ring1 = utils.equipFilter(allGear.filter(equip => {
-                            return equip.slot === "Ring1" || equip.slot === "Ring"
-                        }))
-                        let ring2 = utils.equipFilter(allGear.filter(equip => {
-                            return equip.slot === "Ring2" || equip.slot === "Ring"
-                        }))
-                        let accessory1 = utils.equipFilter(allGear.filter(equip => {
-                            return equip.slot === "Accessory1" || equip.slot === "Accessory"
-                        }))
-                        let accessory2 = utils.equipFilter(allGear.filter(equip => {
-                            return equip.slot === "Accessory2" || equip.slot === "Accessory"
-                        }))
-                        let amulet = utils.equipFilter(allGear.filter(equip => {
-                            return equip.slot === "Amulet"
-                        }))
-                        let weapona1 = utils.equipFilter(allGear.filter(equip => {
-                            return equip.slot === "WeaponA1" || equip.slot === "Axe" || equip.slot === "Shield"
-                        }))
-                        let weapona2 = utils.equipFilter(allGear.filter(equip => {
-                            return equip.slot === "WeaponA2" || equip.slot === "Axe" || equip.slot === "Shield"
-                        }))
-                        let weaponb1 = utils.equipFilter(allGear.filter(equip => {
-                            return equip.slot === "WeaponB1" || equip.slot === "Axe" || equip.slot === "Shield"
-                        }))
-                        let weaponb2 = utils.equipFilter(allGear.filter(equip => {
-                            return equip.slot === "WeaponB2" || equip.slot === "Axe" || equip.slot === "Shield"
-                        }))
-                        let backpack = utils.equipFilter(allGear.filter(equip => {
-                            return equip.slot === "Backpack"
-                        }))
 
+                        let equipItems={}
+                        // let item0,item1,item2,item3,item4,item5,item6,item7,
+                        // item8,item9,item10,item11,item12,item13,item14,item15
+
+                        for(let i = 0; i<16; i++){
+                           if(utils.equipFilter(allGear[i]) !== undefined){
+                                equipItems[`item${i}`] = utils.equipFilter(allGear[i])
+                           }else{
+                               equipItems[`item${i}`] = ''
+                           }
+                        }
+
+                        let item0 = equipItems.item0;
+                        let item1 = equipItems.item1;
+                        let item2 = equipItems.item2;
+                        let item3 = equipItems.item3;
+                        let item4 = equipItems.item4;
+                        let item5 = equipItems.item5;
+                        let item6 = equipItems.item6;
+                        let item7 = equipItems.item7;
+                        let item8 = equipItems.item8;
+                        let item9 = equipItems.item9;
+                        let item10 = equipItems.item10;
+                        let item11 = equipItems.item11;
+                        let item12 = equipItems.item12;
+                        let item13 = equipItems.item13;
+                        let item14 = equipItems.item14;
+                        let item15 = equipItems.item15;
 
                         message.channel.send("Current Gear for: " + char_name + "\n" +
-                            "Helmet:" + helmet.replace(',', ' ') + "\n" +
-                            "Chest:" + chest.replace(',', ' ') + "\n" +
-                            "Shoulders:" + shoulders.replace(',', ' ') + "\n" +
-                            "Leggings:" + leggings.replace(',', ' ') + "\n" +
-                            "Boots:" + boots.replace(',', ' ') + "\n" +
-                            "Gloves:" + gloves.replace(',', ' ') + "\n" +
-                            "Ring1:" + ring1.replace(',', ' ') + "\n" +
-                            "Ring2:" + ring2.replace(',', ' ') + "\n" +
-                            "Accessory1:" + accessory1.replace(',', ' ') + "\n" +
-                            "Accessory2:" + accessory2.replace(',', ' ') + "\n" +
-                            "Amulet:" + amulet.replace(',', ' ') + "\n" +
-                            "WeaponA1:" + weapona1.replace(',', ' ') + "\n" +
-                            "WeaponA2:" + weapona2.replace(',', ' ') + "\n" +
-                            "WeaponB1:" + weaponb1.replace(',', ' ') + "\n" +
-                            "WeaponB2:" + weaponb2.replace(',', ' ') + "\n" +
-                            "Backpack:" + backpack.replace(',', ' '));
+                            item0 + "\n" +
+                            item1 + "\n" +
+                            item2 + "\n" +
+                            item3 + "\n" +
+                            item4 + "\n" +
+                            item5 + "\n" +
+                            item6 + "\n" +
+                            item7 + "\n" +
+                            item8 + "\n" +
+                            item9 + "\n" +
+                            item10 + "\n" +
+                            item11 + "\n" +
+                            item12 + "\n" +
+                            item13 + "\n" +
+                            item14 + "\n" +
+                            item15
+
+                        );
 
                         let insertSql = `INSERT INTO uid_character_gear SET ?`
 
@@ -901,21 +883,23 @@ async function gearCharacter(message) {
                         let values = {
                             uid: uid,
                             character_name: char_name,
-                            helmet: helmet,
-                            chest: chest,
-                            shoulders: shoulders,
-                            leggings: leggings,
-                            boots: boots,
-                            gloves: gloves,
-                            ring1: ring1,
-                            ring2: ring2,
-                            accessory1: accessory1,
-                            accessory2: accessory2,
-                            amulet: amulet,
-                            weaponA1: weapona1,
-                            weaponA2: weaponb2,
-                            weaponB1: weaponb1,
-                            weaponB2: weaponb2
+                            item0: item0,
+                            item1: item1,
+                            item2: item2,
+                            item3: item3,
+                            item4: item4,
+                            item5: item5,
+                            item6: item6,
+                            item7: item7,
+                            item8: item8,
+                            item9: item9,
+                            item10: item10,
+                            item11: item11,
+                            item12: item12,
+                            item13: item13,
+                            item14: item14,
+                            item15: item15
+
                         }
 
                         pool.query(insertSql,values)

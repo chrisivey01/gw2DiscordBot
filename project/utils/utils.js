@@ -5,33 +5,37 @@ module.exports = {
 
 //for character equipments
 
-    equipFilter (equip) {
-        let name;
-        let stats;
-        let id;
-        let equipArray = [];
-        if (equip.length > 0) {
-            if (equip[0].hasOwnProperty("name")) {
-                equipArray.push(equip[0].name)
-                if (equip[0].stats.length) {
-                    for (let i = 0; i < equip[0].stats.length; i++) {
-                        let modifier = equip[0].stats[i].modifier
-                        let attribute = equip[0].stats[i].attribute
+    equipFilter(equip) {
+        let equipArray = "";
+        if (equip) {
+            if (equip.hasOwnProperty("name")) {
+                equipArray += equip.name + ": "
+                if (equip.stats) {
+                    if (equip.stats.length) {
+                        for (let i = 0; i < equip.stats.length; i++) {
+                            let modifier = equip.stats[i].modifier
+                            let attribute = equip.stats[i].attribute
 
-                        equipArray.push(`${attribute} ${modifier}`)
-                    }
-                } else {
-                    let statKeys = Object.keys(equip[0].stats.attributes)
-                    let statValues = Object.values(equip[0].stats.attributes)
+                            let stats = attribute + " " + modifier + " "
+                            equipArray += stats
+                        }
+                    } else {
+                        let statKeys = Object.keys(equip.stats.attributes)
+                        let statValues = Object.values(equip.stats.attributes)
 
-                    for (let i = 0; i < statKeys.length; i++) {
-                        equipArray.push(`${statKeys[i]} ${statValues[i]}  `)
+                        for (let i = 0; i < statKeys.length; i++) {
+                            let stats = statKeys[i] + " " + statValues[i] + " "
+
+                            equipArray += stats
+                        }
                     }
                 }
             }
+        } else {
+            let blank = ''
+            equipArray += blank
         }
-
-        return equipArray.toString()
+        return equipArray
     },
 
     getGearsWithoutStats(characterGearNowWithStats, characterEquipWithoutStatsIds) {
@@ -68,7 +72,6 @@ module.exports = {
     },
 
 //END CHARACTER EQUIPMENT
-
 
 
 //
