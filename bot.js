@@ -124,7 +124,7 @@ const wvwKills = async (api) => {
 }
 
 const wvwScore = async () => {
-    var url = 'https://api.guildwars2.com/v2/wvw/matches/scores?world=' + yaksBendServerID
+    var url = 'https://api.guildwars2.com/v2/wvw/matches/scores?world=' + yaksBendServerId
     let wvwScores
 
     let response = await fetch(url)
@@ -133,7 +133,7 @@ const wvwScore = async () => {
 }
 
 const updateServers = async () => {
-    let url = 'https://api.guildwars2.com/v2/wvw/matches/overview?world=' + yaksBendServerID
+    let url = 'https://api.guildwars2.com/v2/wvw/matches/overview?world=' + yaksBendServerId
     let wvwServers
 
     let response = await fetch(url)
