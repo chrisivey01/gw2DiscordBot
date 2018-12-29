@@ -19,7 +19,7 @@ var spyCount = 0;
 
 //automate IDs
 let yaksBendServerId = 1003;
-let linkedServerID;
+let linkedServerID = 1020;
 // let linkedServerID1;
 // let linkedServerID2;
 
