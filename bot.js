@@ -732,15 +732,13 @@ const getApiUid = (message) => {
                     serviceCalls.buildProgressionOn(obtainApi, characters[0])
                         .then(buildOnCheck => {
                             if (!buildOnCheck.text) {
-                                let submitAccountInfoSql = `INSERT INTO apiDiscordUid (api_key, uid, gw2_account_name) VALUES ?`
-                                let values = [
-                                    [obtainApi, Uid, obtainResults.name]
-                                ]
-                                pool.query(submitAccountInfoSql, [values], (err, result) => {
+                                let submitAccountInfoSql = `INSERT INTO apiDiscordUid SET ? ON DUPLICATE KEY UPDATE api_key = VALUES(api_key), gw2_account_name = VALUES(gw2_account_name) `
+                                let values = {api_key: obtainApi, uid: Uid, gw2_account_name:obtainResults.name}
+
+                                pool.query(submitAccountInfoSql,values,(err, result) => {
                                     if (err) throw err;
                                     console.log("Number of records inserted: " + result.affectedRows);
                                     message.channel.send(`Added to the DB! Now submit your character using !gear [name]`)
-
                                 })
                             } else {
                                 message.channel.send(`Please enable the BUILD progression`)
@@ -778,10 +776,15 @@ async function gearCharacter(message) {
 
     let sql = 'SELECT api_key FROM apiDiscordUid WHERE uid = ?'
     let myApi = await pool.query(sql, [discordUid])
-    message.channel.send(`Gimme one second... loading gear.`)
     serviceCalls.characterSubmit(myApi[0].api_key, gw2Char)
         .then(results => {
+            if(results.text === "no such character"){
+                message.channel.send('This character is not linked to your current API.')
+                return;
+            }
             if (results.equipment) {
+                message.channel.send(`Gimme one second... loading gear.`)
+
                 results.equipment.forEach(eq => {
                     let equipment = {}
                     let equipmentWithoutStats = {}
@@ -828,16 +831,16 @@ async function gearCharacter(message) {
                         let char_name = allGear.character_name
 
 
-                        let equipItems={}
+                        let equipItems = {}
                         // let item0,item1,item2,item3,item4,item5,item6,item7,
                         // item8,item9,item10,item11,item12,item13,item14,item15
 
-                        for(let i = 0; i<16; i++){
-                           if(utils.equipFilter(allGear[i]) !== undefined){
+                        for (let i = 0; i < 16; i++) {
+                            if (utils.equipFilter(allGear[i]) !== undefined) {
                                 equipItems[`item${i}`] = utils.equipFilter(allGear[i])
-                           }else{
-                               equipItems[`item${i}`] = ''
-                           }
+                            } else {
+                                equipItems[`item${i}`] = ''
+                            }
                         }
 
                         let item0 = equipItems.item0;
@@ -874,11 +877,13 @@ async function gearCharacter(message) {
                             item13 + "\n" +
                             item14 + "\n" +
                             item15
-
                         );
 
-                        let insertSql = `INSERT INTO uid_character_gear SET ?`
 
+                        let gearInfoSql = `INSERT INTO uid_character_gear SET ? ON DUPLICATE KEY UPDATE 
+                              character_name = VALUES(character_name), item0 = VALUES(item0), item1 = VALUES(item1),  item2 = VALUES(item2), item3 = VALUES(item3),
+                               item4 = VALUES(item4), item5 = VALUES(item5), item6 = VALUES(item6), item7 = VALUES(item7), item8 = VALUES(item8), item9 = VALUES(item9),
+                                item10 = VALUES(item10), item11 = VALUES(item11), item12 = VALUES(item12), item13 = VALUES(item13), item14 = VALUES(item14), item15 = VALUES(item15) `
                         let values = {
                             uid: uid,
                             character_name: char_name,
@@ -898,10 +903,8 @@ async function gearCharacter(message) {
                             item13: item13,
                             item14: item14,
                             item15: item15
-
                         }
-
-                        pool.query(insertSql,values)
+                        pool.query(gearInfoSql, values)
                     })
             }
         })
