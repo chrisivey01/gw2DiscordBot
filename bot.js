@@ -1030,7 +1030,7 @@ client.on("message", async (message) => {
     }
 
 
-    if (message.content.match("$key add")) {
+    if (message.content.startsWith("$key add")) {
         await keyAdd(message);
     }
     /*Base commands*/
