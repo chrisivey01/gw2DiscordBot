@@ -430,6 +430,12 @@ async function resetLeaderboard(message) {
 }
 
 // __________________________ all new
+//for announcement
+const discordInfo = (message) => {
+    message.channel.send('join me on -> https://discord.gg/uNsAttw')
+}
+
+
 //reset links
 const testClass = (message) => {
     message.channel.send(`Link 1: ${linkedServerID} Link 2: ${linkedServerID1} Link 3: ${linkedServerID2} `)
@@ -1025,43 +1031,51 @@ client.on("message", async (message) => {
 
 
     /*Base commands*/
-    if (message.content.startsWith("!commands")) {
-        commands(message);
-    } else if (message.content.startsWith("!users")) {
-        users(message);
-    } else if (message.content.startsWith("!serverStatus")) {
-        serverStatus(message);
-    } else if (message.content.startsWith("!kda")) {
-        await kda(message);
-    } else if (message.content.startsWith("$key add")) {
-        await keyAdd(message);
-    } else if (message.content.startsWith("!score")) {
-        await score(message);
-    } else if (message.content.startsWith("!kills")) {
-        await kills(message);
-    } else if (message.content.startsWith("!leaderboard")) {
-        await leaderboard(message);
-    } else if (message.content.startsWith("!submit")) {
-        getApiUid(message)
-    } else if (message.content.startsWith("!gear")) {
-        await gearCharacter(message)
-    }
+    if(message.content.startsWith("!")) {
+        if (message.content.match("!commands")) {
+            commands(message);
+        } else if (message.content.match("!users")) {
+            users(message);
+        } else if (message.content.match("!serverStatus")) {
+            serverStatus(message);
+        } else if (message.content.match("!kda")) {
+            await kda(message);
+        } else if (message.content.match("$key add")) {
+            await keyAdd(message);
+        } else if (message.content.match("!score")) {
+            await score(message);
+        } else if (message.content.match("!kills")) {
+            await kills(message);
+        } else if (message.content.match("!leaderboard")) {
+            await leaderboard(message);
+        } else if (message.content.match("!submit")) {
+            getApiUid(message)
+        } else if (message.content.match("!gear")) {
+            await gearCharacter(message)
+        } else if (message.content.match("!discord")) {
+            discordInfo(message)
+        }
 
-    /*Mod commands*/
-    else if (message.content.startsWith("!modCommands")) {
-        modCommands(message);
-    } else if (message.content.startsWith("!verify")) {
-        await verifyUnverifyUsers(message)
-    } else if (message.content.startsWith("!resetLeaderboard")) {
-        await resetLeaderboard(message);
-    } else if (message.content.startsWith("!update")) {
-        await update(message);
-    } else if (message.content.startsWith("!serverList")) {
-        await serverList(message);
-    } else if (message.content.startsWith("!linkUpdate")) {
-        linkUpdate(message)
-    } else if (message.content.startsWith("!test")) {
-        testClass(message)
+        /*Mod commands*/
+        else if (message.content.match("!modCommands")) {
+            modCommands(message);
+        } else if (message.content.match("!verify")) {
+            await verifyUnverifyUsers(message)
+        } else if (message.content.match("!resetLeaderboard")) {
+            await resetLeaderboard(message);
+        } else if (message.content.match("!update")) {
+            await update(message);
+        } else if (message.content.match("!serverList")) {
+            await serverList(message);
+        } else if (message.content.match("!linkUpdate")) {
+            linkUpdate(message)
+        } else if (message.content.match("!test")) {
+            testClass(message)
+        }
+
+        else{
+            message.channel.send('This command does not exist. Type !commands')
+        }
     }
 });
 
