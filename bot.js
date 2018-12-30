@@ -1030,6 +1030,9 @@ client.on("message", async (message) => {
     }
 
 
+    if (message.content.match("$key add")) {
+        await keyAdd(message);
+    }
     /*Base commands*/
     if(message.content.startsWith("!")) {
         if (message.content.match("!commands")) {
@@ -1040,8 +1043,6 @@ client.on("message", async (message) => {
             serverStatus(message);
         } else if (message.content.match("!kda")) {
             await kda(message);
-        } else if (message.content.match("$key add")) {
-            await keyAdd(message);
         } else if (message.content.match("!score")) {
             await score(message);
         } else if (message.content.match("!kills")) {
