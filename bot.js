@@ -725,6 +725,9 @@ const getApiUid = (message) => {
     let Uid = message.author.id;
     let getText = message.content;
     let obtainApi = getText.replace(`!submit `, ``)
+
+    message.delete(message)
+    message.channel.send('Deleted your API to save yo booty!')
 //get API/UID/ACCOUNT NAME and submit to DB
     serviceCalls.apiChecker(obtainApi)
         .then(results => {
