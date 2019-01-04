@@ -68,12 +68,12 @@ module.exports = {
             }
             return charInfo
         }
-
     },
 
 //END CHARACTER EQUIPMENT
 
 
-//
-
+//BEGIN CHARACTER TRAITS
+// https://api.guildwars2.com/v2/traits?ids=581,582
+// https://api.guildwars2.com/v2/characters/Chris%20Goes%20Deep/specializations?access_token=9F1DA7B3-F32A-024F-B76A-7A496E9A207F7EAF1AF3-DB60-493B-B4E5-5503BA064F6B
 }

@@ -332,9 +332,9 @@ async function keyAdd(message) {
         if (worldCheck.world === yaksBendServerId) {
             userToModify.addRole(verifiedRole.id)
             message.channel.send("You've been verified! Type !commands to see what I can do.")
-        } else if(worldCheck.world === linkedServerID || worldCheck.world === linkedServerID1 || worldCheck.world === linkedServerID2){
+        } else if (worldCheck.world === linkedServerID || worldCheck.world === linkedServerID1 || worldCheck.world === linkedServerID2) {
             userToModify.addRole(linkVerifiedRole.id)
-        }else{
+        } else {
             message.channel.send("You do not belong to YB or Links")
 
         }
@@ -747,9 +747,9 @@ const getApiUid = (message) => {
                         .then(buildOnCheck => {
                             if (!buildOnCheck.text) {
                                 let submitAccountInfoSql = `INSERT INTO apiDiscordUid SET ? ON DUPLICATE KEY UPDATE api_key = VALUES(api_key), gw2_account_name = VALUES(gw2_account_name) `
-                                let values = {api_key: obtainApi, uid: Uid, gw2_account_name:obtainResults.name}
+                                let values = {api_key: obtainApi, uid: Uid, gw2_account_name: obtainResults.name}
 
-                                pool.query(submitAccountInfoSql,values,(err, result) => {
+                                pool.query(submitAccountInfoSql, values, (err, result) => {
                                     if (err) throw err;
                                     console.log("Number of records inserted: " + result.affectedRows);
                                     message.channel.send(`Added to the DB! Now submit your character using !gear [name]`)
@@ -792,7 +792,7 @@ async function gearCharacter(message) {
     let myApi = await pool.query(sql, [discordUid])
     serviceCalls.characterSubmit(myApi[0].api_key, gw2Char)
         .then(results => {
-            if(results.text === "no such character"){
+            if (results.text === "no such character") {
                 message.channel.send('This character is not linked to your current API.')
                 return;
             }
@@ -922,97 +922,74 @@ async function gearCharacter(message) {
                     })
             }
         })
-// let sql = 'INSERT INTO char_equip  fields '
+        .then(() => {
+            serviceCalls.traitCheck(gw2Char, myApi[0].api_key)
+                .then(results => {
+                    let wvwSpecs = results.specializations.wvw
+                    console.log(wvwSpecs);
+                    let minorTraits = wvwSpecs[0].traits.toString()
+                    let majorTraits = wvwSpecs[1].traits.toString()
+                    let grandmasterTraits = wvwSpecs[2].traits.toString()
+
+                    let allTraits = {}
+                    allTraits.minorTraits = minorTraits
+                    allTraits.majorTraits = majorTraits
+                    allTraits.grandmasterTraits = grandmasterTraits
+                    return allTraits
+                })
+                .then(allTraits => {
+                    let minorTraitsAdjusted = []
+                    serviceCalls.getTraitInfo(allTraits.minorTraits)
+                        .then(results => {
+                            for (let i = 0; i < results.length; i++) {
+                                let minorObj = {}
+                                minorObj.name = results[i].name
+                                minorObj.desc = results[i].description
+                                minorTraitsAdjusted.push(minorObj)
+                            }
+                            allTraits.minorTraits = minorTraitsAdjusted
+                            return allTraits
+                        })
+                        .then(allTraits => {
+                            let majorTraitsAdjusted = []
+                            serviceCalls.getTraitInfo(allTraits.majorTraits)
+                                .then(results => {
+                                    for (let i = 0; i < results.length; i++) {
+                                        let majorObj = {}
+                                        majorObj.name = results[i].name
+                                        majorObj.desc = results[i].description
+                                        majorTraitsAdjusted.push(majorObj)
+                                    }
+                                    allTraits.majorTraits = majorTraitsAdjusted
+                                    return allTraits
+                                })
+                                .then(allTraits => {
+                                    let grandmasterAdjusted = []
+                                    serviceCalls.getTraitInfo(allTraits.grandmasterTraits)
+                                        .then(results => {
+                                            for (let i = 0; i < results.length; i++) {
+                                                let gmObj = {}
+                                                gmObj.name = results[i].name
+                                                grandmasterAdjusted.push(gmObj)
+                                            }
+                                            allTraits.grandmasterTraits = grandmasterAdjusted
+                                            return allTraits
+                                        })
+                                        .then(allTraits => {
+                                            console.log(allTraits)
+                                            // let minorName, minorDesc;
+                                            // let majorName, majorDesc;
+                                            // let gmName;
+
+                                            message.channel.send("Traits: "+ allTraits.minorTraits[0].name + ", " + allTraits.minorTraits[1].name + ", " + allTraits.minorTraits[2].name + "\n"
+                                                + allTraits.majorTraits[0].name + ", " + allTraits.majorTraits[1].name + ", " + allTraits.majorTraits[2].name + "\n"
+                                                + allTraits.grandmasterTraits[0].name + ", " + allTraits.grandmasterTraits[1].name + ", " + allTraits.grandmasterTraits[2].name)
+                                        })
+                                })
+                        })
+                })
+        })
 }
-
-
-// for(let i = 0; i<results.equipment.length; i++){
-//
-//     if (results.equipment[i].hasOwnProperty('stats')) {
-//         if (results.equipment[i].stats.hasOwnProperty('attributes')) {
-//             equipment.id = results.equipment[i].id
-//             equipment.slot = results.equipment[i].slot
-//             equipment.stats = results.equipment[i].stats
-//             charactersEquipment.push(equipment)
-//         }
-//     }
-// }
-// charactersEquipment = getGearNames(charactersEquipment)
-// console.log(charactersEquipment)
-
-// results.equipment[i].id is what I need -- results.equipment[i[.slot is equipment
-
-// let resultsEquipArray = [...results.equipment]
-// let newEquipArray = []
-// //newEquipArray is now populated with just equipment slot and ID
-// resultsEquipArray.filter(eq => {
-//     let newObj = {}
-//     if(eq.slot !== "Backpack" && eq.slot !== "HelmAquatic" && eq.slot !== "WeaponAquaticA"
-//         && eq.slot !== "Sickle" && eq.slot !=="Axe" && eq.slot !=="Pick") {
-//         newObj.slot = eq.slot
-//         newObj.id = eq.id
-//         newEquipArray.push(newObj)
-//     }
-// })
-//
-// let equipIdsArray = []
-// //filtered equipment Ids
-// newEquipArray.filter(equipIds => {
-//     equipIdsArray.push(equipIds.id)
-// })
-// //sends all IDs to fetch request
-// serviceCalls.gearCheck(equipIdsArray.toString())
-//     .then(resultsFromAnet => {
-//         resultsFromAnet.forEach(eqName => {
-//             console.log(eqName.name)
-//         })
-//         let helmet;
-//         let chest;
-//         let shoulders;
-//         let leggings;
-//         let boots;
-//         let gloves;
-//         let ring1;
-//         let ring2;
-//         let accessory1;
-//         let accessory2;
-//         let amulet;
-//         let weaponA1;
-//         let weaponA2;
-//         let weaponB1;
-//         let weaponB2;
-//
-//         console.log(results)
-//
-//         let insertSql = `INSERT INTO uid_character_gear (uid, gw2Char, helmet, chest, shoulders, leggings, boots, gloves, ring1, ring2, accessory1, accessory2, amulet, weaponA1, weaponA2,weaponB1,weaponB2) VALUES ?`
-//         let values = {
-//             uid:uid,
-//             character_name:gw2Char,
-//             helmet:helmet,
-//             chest:chest,
-//             shoulders:shoulders,
-//             leggings:leggings,
-//             boots:boots,
-//             gloves:gloves,
-//             ring1:ring1,
-//             ring2:ring2,
-//             accessory1:accessory1,
-//             accessory2:accessory2,
-//             amulet:amulet,
-//             weaponA1:weaponA1,
-//             weaponA2:weaponA2,
-//             weaponB1:weaponB1,
-//             weaponB2:weaponB2
-//         }
-//     })
-//make new obj array
-
-// newEquipArray.forEach(equip =>{
-//     if{
-//
-//
-//     }
-// })
 
 
 client.on("message", async (message) => {
@@ -1037,7 +1014,7 @@ client.on("message", async (message) => {
         await keyAdd(message);
     }
     /*Base commands*/
-    if(message.content.startsWith("!")) {
+    if (message.content.startsWith("!")) {
         if (message.content.match("!commands")) {
             commands(message);
         } else if (message.content.match("!users")) {
@@ -1077,7 +1054,7 @@ client.on("message", async (message) => {
             testClass(message)
         }
 
-        else{
+        else {
             message.channel.send('This command does not exist. Type !commands')
         }
     }

@@ -25,7 +25,7 @@ module.exports = {
             .then(buildOnCheck => buildOnCheck.json())
     },
 
-    characterSubmit: function (api, character) {
+    characterSubmit: function (character,api) {
         let url = `https://api.guildwars2.com/v2/characters/${character}/equipment?access_token=${api}`
         return fetch(url)
             .then(results => results.json())
@@ -48,7 +48,18 @@ module.exports = {
         let url = `https://api.guildwars2.com/v2/worlds?ids=all`
         return fetch(url)
             .then(results => results.json())
+    },
 
+    traitCheck: function(character,api){
+        let url = `https://api.guildwars2.com/v2/characters/${character}/specializations?access_token=${api}`
+        return fetch(url)
+            .then(results => results.json())
+    },
+
+    getTraitInfo: function(traits){
+        let url = `https://api.guildwars2.com/v2/traits?ids=${traits}`
+        return fetch(url)
+            .then(results => results.json())
     }
 }
 
