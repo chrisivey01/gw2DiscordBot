@@ -60,6 +60,12 @@ module.exports = {
         let url = `https://api.guildwars2.com/v2/traits?ids=${traits}`
         return fetch(url)
             .then(results => results.json())
+    },
+
+    getCharacterProfession : function(character, api){
+        let url = `https://api.guildwars2.com/v2/characters/${character}/core?access_token=${api}`
+        return fetch(url)
+            .then(results => results.json())
     }
 }
 

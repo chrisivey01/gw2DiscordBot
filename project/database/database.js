@@ -2,21 +2,21 @@ var mysql = require('mysql')
 var util = require('util')
 
 // aws instance
-// var pool = mysql.createPool({
-//     connectionLimit: 100,
-//     host: '54.175.138.146',
-//     user: 'root',
-//     password: 'root',
-//     database: 'yaksbend'
-// })
-
 var pool = mysql.createPool({
     connectionLimit: 100,
-    host: '127.0.0.1',
+    host: '54.175.138.146',
     user: 'root',
     password: 'root',
     database: 'yaksbend'
 })
+
+// var pool = mysql.createPool({
+//     connectionLimit: 100,
+//     host: '127.0.0.1',
+//     user: 'root',
+//     password: 'root',
+//     database: 'yaksbend'
+// })
 
 
 pool.getConnection((err, connection) => {

@@ -211,7 +211,7 @@ function commands(message) {
         "\n !kills " +
         "\n !leaderboard " +
         "\n !submit " +
-        "\n !gear " +
+        "\n !build " +
         "\n !serverList"
     );
 }
@@ -752,7 +752,7 @@ const getApiUid = (message) => {
                                 pool.query(submitAccountInfoSql, values, (err, result) => {
                                     if (err) throw err;
                                     console.log("Number of records inserted: " + result.affectedRows);
-                                    message.channel.send(`Added to the DB! Now submit your character using !gear [name]`)
+                                    message.channel.send(`Added to the DB! Now submit your character using !build [name]`)
                                 })
                             } else {
                                 message.channel.send(`Please enable the BUILD progression`)
@@ -786,16 +786,20 @@ async function gearCharacter(message) {
     let characterEquipmentWithoutStats = []
     let characterGearNowWithStats = []
     let allGear;
-    let gw2Char = text.replace(`!gear `, ``)
+    let gw2Char = text.replace(`!build `, ``)
 
     let sql = 'SELECT api_key FROM apiDiscordUid WHERE uid = ?'
     let myApi = await pool.query(sql, [discordUid])
-    serviceCalls.characterSubmit(myApi[0].api_key, gw2Char)
+    serviceCalls.characterSubmit(gw2Char, myApi[0].api_key)
         .then(results => {
             if (results.text === "no such character") {
                 message.channel.send('This character is not linked to your current API.')
                 return;
+            }else if (results.text === "invalid key") {
+                message.channel.send('You have an invalid key issue.')
+                return;
             }
+
             if (results.equipment) {
                 message.channel.send(`Gimme one second... loading gear.`)
 
@@ -976,17 +980,50 @@ async function gearCharacter(message) {
                                             return allTraits
                                         })
                                         .then(allTraits => {
-                                            console.log(allTraits)
-                                            // let minorName, minorDesc;
-                                            // let majorName, majorDesc;
-                                            // let gmName;
-
                                             message.channel.send("Traits: "+ allTraits.minorTraits[0].name + ", " + allTraits.minorTraits[1].name + ", " + allTraits.minorTraits[2].name + "\n"
                                                 + allTraits.majorTraits[0].name + ", " + allTraits.majorTraits[1].name + ", " + allTraits.majorTraits[2].name + "\n"
                                                 + allTraits.grandmasterTraits[0].name + ", " + allTraits.grandmasterTraits[1].name + ", " + allTraits.grandmasterTraits[2].name)
+
+
+
+                                            let traitInfoSql = `INSERT INTO uid_character_traits SET ? ON DUPLICATE KEY UPDATE 
+                              character_name = VALUES(character_name), trait0 = VALUES(trait0), trait1 = VALUES(trait1),  trait2 = VALUES(trait2), trait3 = VALUES(trait3),
+                               trait4 = VALUES(trait4), trait5 = VALUES(trait5), trait6 = VALUES(trait6), trait7 = VALUES(trait7), trait8 = VALUES(trait8) `
+                                            let values = {
+                                                uid: discordUid,
+                                                character_name: gw2Char,
+                                                trait0: allTraits.minorTraits[0].name,
+                                                trait1: allTraits.minorTraits[1].name,
+                                                trait2: allTraits.minorTraits[2].name,
+                                                trait3: allTraits.majorTraits[0].name,
+                                                trait4: allTraits.majorTraits[1].name ,
+                                                trait5: allTraits.majorTraits[2].name ,
+                                                trait6: allTraits.grandmasterTraits[0].name ,
+                                                trait7: allTraits.grandmasterTraits[1].name ,
+                                                trait8: allTraits.grandmasterTraits[2].name
+
+                                            }
+                                            pool.query(traitInfoSql, values)
+
                                         })
                                 })
                         })
+                })
+        })
+        .then(()=>{
+            serviceCalls.getCharacterProfession(gw2Char, myApi[0].api_key)
+                .then(results => {
+                    let professionName = results.profession
+                    let myData = {
+                        uid: discordUid,
+                        character_name: gw2Char,
+                        profession: professionName
+                    }
+                    let professionSql = `INSERT INTO uid_character_profession SET ? `
+
+                    pool.query(professionSql, myData)
+
+                    console.log(professionName)
                 })
         })
 }
@@ -1031,7 +1068,7 @@ client.on("message", async (message) => {
             await leaderboard(message);
         } else if (message.content.match("!submit")) {
             getApiUid(message)
-        } else if (message.content.match("!gear")) {
+        } else if (message.content.match("!build")) {
             await gearCharacter(message)
         } else if (message.content.match("!discord")) {
             discordInfo(message)
