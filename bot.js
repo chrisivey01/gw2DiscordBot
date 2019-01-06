@@ -1066,7 +1066,7 @@ client.on("message", async (message) => {
             await kills(message);
         } else if (message.content.match("!leaderboard")) {
             await leaderboard(message);
-        }
+
         // else if (message.content.match("!submit")) {
         //     getApiUid(message)
         } else if (message.content.match("!build")) {
