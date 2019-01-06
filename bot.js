@@ -210,7 +210,7 @@ function commands(message) {
         "\n !score " +
         "\n !kills " +
         "\n !leaderboard " +
-        "\n !submit " +
+        // "\n !submit " +
         "\n !build " +
         "\n !serverList"
     );
@@ -788,7 +788,7 @@ async function gearCharacter(message) {
     let allGear;
     let gw2Char = text.replace(`!build `, ``)
 
-    let sql = 'SELECT api_key FROM users WHERE uid = ?'
+    let sql = 'SELECT api_key FROM users WHERE user_id = ?'
     let myApi = await pool.query(sql, [discordUid])
     serviceCalls.characterSubmit(gw2Char, myApi[0].api_key)
         .then(results => {
@@ -1066,8 +1066,9 @@ client.on("message", async (message) => {
             await kills(message);
         } else if (message.content.match("!leaderboard")) {
             await leaderboard(message);
-        } else if (message.content.match("!submit")) {
-            getApiUid(message)
+        }
+        // else if (message.content.match("!submit")) {
+        //     getApiUid(message)
         } else if (message.content.match("!build")) {
             await gearCharacter(message)
         } else if (message.content.match("!discord")) {
