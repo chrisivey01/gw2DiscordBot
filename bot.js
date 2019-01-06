@@ -788,7 +788,7 @@ async function gearCharacter(message) {
     let allGear;
     let gw2Char = text.replace(`!build `, ``)
 
-    let sql = 'SELECT api_key FROM apiDiscordUid WHERE uid = ?'
+    let sql = 'SELECT api_key FROM users WHERE uid = ?'
     let myApi = await pool.query(sql, [discordUid])
     serviceCalls.characterSubmit(gw2Char, myApi[0].api_key)
         .then(results => {
